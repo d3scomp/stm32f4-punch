@@ -132,7 +132,7 @@ $(PROJECT).elf: $(APP_OBJECTS) $(HAL_OBJECTS)
 
 # Flash final elf into device
 flash: $(ELF)
-	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $< verify reset"
+	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $< verify reset exit"
 
 # Debug
 debug: $(ELF)
