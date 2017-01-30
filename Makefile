@@ -21,7 +21,7 @@ CFLAGS = -mcpu=cortex-m4 -g -Os -Wall -pipe
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=hard -mfpu=fpv4-sp-d16 -MMD -MP -fsingle-precision-constant
 CFLAGS += -D STM32F407xx
 CXXFLAGS = $(CFLAGS)
-LDFLAGS=-T STM32F407VG_FLASH.ld
+LDFLAGS=-T STM32F407VG_FLASH.ld -specs=nosys.specs
 
 # Includes including library includes
 INCLUDES=\
@@ -47,12 +47,13 @@ $(HAL)/Src/stm32f4xx_hal_rcc.o \
 $(HAL)/Src/stm32f4xx_hal_rcc_ex.o \
 $(HAL)/Src/stm32f4xx_hal_dma.o \
 $(HAL)/Src/stm32f4xx_hal_dma_ex.o \
-$(HAL)/Src/stm32f4xx_hal_cortex.o
+$(HAL)/Src/stm32f4xx_hal_cortex.o \
+\
+$(HAL)/Src/stm32f4xx_hal_usart.o \
+$(HAL)/Src/stm32f4xx_hal_uart.o \
 
 # Available HAL module objects
 HAL_OBJECTS_EXTRA=\
-$(HAL)/Src/stm32f4xx_hal_uart.o \
-$(HAL)/Src/stm32f4xx_hal_usart.o \
 $(HAL)/Src/stm32f4xx_hal_wwdg.o \
 $(HAL)/Src/stm32f4xx_ll_fmc.o \
 $(HAL)/Src/stm32f4xx_ll_fsmc.o \
@@ -119,7 +120,7 @@ clean:
 	rm -f $(HAL_OBJECTS)
 
 # Link final efl
-$(PROJECT).elf: $(APP_OBJECTS) $(HAL_OBJECTS)
+$(ELF): $(APP_OBJECTS) $(HAL_OBJECTS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
 
 # Compile C source into object
