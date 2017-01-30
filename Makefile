@@ -26,6 +26,11 @@ LDFLAGS=-T STM32F407VG_FLASH.ld -specs=nosys.specs
 # Includes including library includes
 INCLUDES=\
 -I./inc \
+-I/usr/src/linux/arch/arm/include \
+-I/usr/src/linux/include \
+-I/usr/src/linux/include/uapi \
+-I/usr/src/linux/include/asm-generic \
+-I/usr/src/linux/arch/arm64/include/uapi \
 -I$(HAL)/Inc \
 -I$(CMSIS)/Device/ST/STM32F4xx/Include \
 -I$(CMSIS)/Include
@@ -35,7 +40,9 @@ APP_OBJECTS=\
 src/stm32f4xx_it.o \
 src/system_stm32f4xx.o \
 src/startup_stm32f407xx.o \
-src/main.o
+src/main.o \
+src/simulation.o \
+src/xorshift.o
 
 # Currenly used HAL module objects
 HAL_OBJECTS=\

@@ -37,7 +37,11 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "simulation.h"
+
 #include <stdio.h>
+
+
 
 static void SystemClock_Config(void);
 static void Error_Handler(void);
@@ -98,9 +102,7 @@ int main(void) {
 	HAL_UART_Init(&huart2);
 	
 	// Do something with LEDs to demonstrate that the code is running
-	volatile int cnt = 0;
-	while (1) {
-		cnt++;
+	for(int cnt = 0; cnt < 8; cnt++) {
 		switch(cnt % 4) {
 			case 0: HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);  break;
 			case 1: HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);  break;
@@ -112,9 +114,18 @@ int main(void) {
 		
 		HAL_Delay(100); // 100ms
 	}
+	
+	// Initialize punch press simulation
+	struct pp_t pp;
+	
+	pp_init(&pp);
 
 	// Infinite loop
-	while (1) {}
+	while (1) {
+		//HAL_Delay(100); // 100ms
+		pp_update(&pp, 100000);
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+	}
 }
 
 /**
