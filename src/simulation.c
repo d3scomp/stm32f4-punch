@@ -1,15 +1,17 @@
-#include <asm/div64.h>
+//#include <asm/div64.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "simulation.h"
 #include "xorshift.h"
 //#include "json.h"
 
-static int sign(s64 x)
+static int sign(int64_t x)
 {
 	return x < 0 ? -1 : 1;
 }
 
-static inline s32 abs32(s32 x)
+static inline int32_t abint32_t(int32_t x)
 {
 	return x < 0 ? -x : x;
 }
@@ -18,10 +20,10 @@ static inline s32 abs32(s32 x)
 ({ \
 	int s1 = sign(dividend); \
 	int s2 = sign(divisor); \
-	u64 udividend = abs64(dividend); \
-	u32 udivisor = abs(divisor); \
-	udividend %= udivisor; \
-	dividend = (s64)udividend * s1 * s2; \
+	uint64_t udividend = abs64(dividend); \
+	uint32_t udivisor = abs(divisor); \
+	udividend /= udivisor; \
+	dividend = (int64_t)udividend * s1 * s2; \
 })
 
 
@@ -29,10 +31,10 @@ static inline s32 abs32(s32 x)
 ({ \
 	int s1 = sign(dividend); \
 	int s2 = sign(divisor); \
-	u64 udividend = abs64(dividend); \
-	u32 udivisor = abs(divisor); \
+	uint64_t udividend = abint64_t(dividend); \
+	uint32_t udivisor = abs(divisor); \
 	do_div(udividend, udivisor); \
-	dividend = (s64)udividend * s1 * s2; \
+	dividend = (int64_t)udividend * s1 * s2; \
 })*/
 
 #define ERS_TABLE_SAFE_ZONE 20000000 //nm /* this is zone around the punching area, exiting this zone with the center of the punching head leads to failure */
@@ -67,11 +69,11 @@ static inline void set_encoder(struct pp_axis_t * axis)
 	axis->encoder = enc;
 }
 
-static inline u32 get_state(struct pp_axis_t * axis, int vertical, s32 max_axis_value)
+static inline uint32_t get_state(struct pp_axis_t * axis, int vertical, int32_t max_axis_value)
 {
-	u32 result = axis->encoder << (vertical ? 2 : 0);
+	uint32_t result = axis->encoder << (vertical ? 2 : 0);
 
-	s32 head_pos = axis->head_pos;
+	int32_t head_pos = axis->head_pos;
 
 	if (head_pos < 0)
 		result |= US_SAFE_L << (vertical ? 2 : 0);
@@ -83,36 +85,36 @@ static inline u32 get_state(struct pp_axis_t * axis, int vertical, s32 max_axis_
 	return result;
 }
 
-static inline u32 update_axis(
+static inline uint32_t update_axis(
 	struct pp_axis_t * axis,
-	u32 us_period,
+	uint32_t us_period,
 	int vertical,
-	s32 max_axis_value)
+	int32_t max_axis_value)
 {
-	s32 head_pos;
-	s64 head_pos_change;
+	int32_t head_pos;
+	int64_t head_pos_change;
 
-	s32 friction = ERS_FRICTION_KOEF * ERS_HEAD_MASS_G;
-	s32 vel_decreased_by_friction = (friction * us_period) / 1000;
+	int32_t friction = ERS_FRICTION_KOEF * ERS_HEAD_MASS_G;
+	int32_t vel_decreased_by_friction = (friction * us_period) / 1000;
 
-	s32 vel = axis->velocity;
-	s64 vel_change;
-	s64 motor_force = (axis->power * 2500 - vel) * 5; // division by 80 is ok, 400 / 80 = 5, 1000000 / 80 = 12500
-	s64 random_force_factor = motor_force * (xorshift_rand() % 1000);
+	int32_t vel = axis->velocity;
+	int64_t vel_change;
+	int64_t motor_force = (axis->power * 2500 - vel) * 5; // division by 80 is ok, 400 / 80 = 5, 1000000 / 80 = 12500
+	int64_t random_force_factor = motor_force * (xorshift_rand() % 1000);
 
 	signed_do_div(random_force_factor, 100000); // divide random_force_factor by 100000 -> (motor_force * (xorshift_rand() % 1000)) / 100000
 	motor_force += random_force_factor;
 
 	vel_change = motor_force * us_period;
-	signed_do_div(vel_change, 1000000); // divide vel_change by 1000000 -> (s32)((motor_force * us_period) / 1000000)
-	vel += (s32)vel_change;
+	signed_do_div(vel_change, 1000000); // divide vel_change by 1000000 -> (int32_t)((motor_force * us_period) / 1000000)
+	vel += (int32_t)vel_change;
 
 
-	if (abs32(vel) <= 1) {
+	if (abint32_t(vel) <= 1) {
 		vel = 0;
 	} else {
-		s32 vel_decr = vel_decreased_by_friction;
-		if (abs32(vel) <= vel_decr) {
+		int32_t vel_decr = vel_decreased_by_friction;
+		if (abint32_t(vel) <= vel_decr) {
 			vel = 0;
 		} else {
 			if (vel < 0) {
@@ -125,9 +127,9 @@ static inline u32 update_axis(
 
 	axis->velocity = vel;
 	
-	head_pos_change = (s64)vel * (s64)us_period;
-	signed_do_div(head_pos_change, 1000); // divide head_pos_change by 1000 -> (s32)((s64)vel * (s64)us_period / 1000)
-	axis->head_pos += (s32)head_pos_change;
+	head_pos_change = (int64_t)vel * (int64_t)us_period;
+	signed_do_div(head_pos_change, 1000); // divide head_pos_change by 1000 -> (int32_t)((int64_t)vel * (int64_t)us_period / 1000)
+	axis->head_pos += (int32_t)head_pos_change;
 	head_pos = axis->head_pos;
 
 	set_encoder(axis);
@@ -135,8 +137,8 @@ static inline u32 update_axis(
 	return get_state(axis, vertical, max_axis_value);
 }
 
-u32 pp_update(struct pp_t * pp, u32 us_period) {
-	u32 retval;
+uint32_t pp_update(struct pp_t * pp, uint32_t us_period) {
+	uint32_t retval;
 
 	if (!pp->failed) {
 		retval = update_axis(&pp->x_axis, us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
@@ -147,7 +149,7 @@ u32 pp_update(struct pp_t * pp, u32 us_period) {
 		}
 	
 		if (pp->punch) {
-			if (pp->remaining_punch_time > 0 || abs32(pp->x_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S || abs32(pp->y_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S) {
+			if (pp->remaining_punch_time > 0 || abint32_t(pp->x_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S) {
 				pp->failed = 1;
 				retval |= US_FAIL;
 				return retval;
@@ -166,7 +168,7 @@ u32 pp_update(struct pp_t * pp, u32 us_period) {
 			if (pp->remaining_punch_time > 0) {
 				pp->remaining_punch_time -= us_period;
 
-				if (abs32(pp->x_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S || abs32(pp->y_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S) {
+				if (abint32_t(pp->x_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S) {
 					pp->failed = 1;
 					retval |= US_FAIL;
 					return retval;
@@ -199,7 +201,7 @@ u32 pp_update(struct pp_t * pp, u32 us_period) {
 
 static char pp_get_random_char(void)
 {
-	u32 r = xorshift_rand();
+	uint32_t r = xorshift_rand();
 	switch ((r >> 7) & 0x3)
 	{
 		case 1:
@@ -228,8 +230,8 @@ static void pp_init_common(struct pp_t * pp)
 
 void pp_reinit(struct pp_t * pp)
 {
-	s32 x_init_pos = pp->x_init_pos;
-	s32 y_init_pos = pp->y_init_pos;
+	int32_t x_init_pos = pp->x_init_pos;
+	int32_t y_init_pos = pp->y_init_pos;
 	int use_init_pos = pp->use_init_pos;
 
 	memset(pp, 0, sizeof(*pp));

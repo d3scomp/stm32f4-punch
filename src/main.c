@@ -76,7 +76,7 @@ int main(void) {
 	GPIO_Init.Pin   = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
 	GPIO_Init.Mode  = GPIO_MODE_OUTPUT_PP;
 	GPIO_Init.Pull  = GPIO_NOPULL;
-	GPIO_Init.Speed = GPIO_SPEED_HIGH;  
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
 	HAL_GPIO_Init(GPIOD, &GPIO_Init);
 	
 	// Enable pins used by UART2, set them to their alterantive (UART2) function
@@ -118,13 +118,22 @@ int main(void) {
 	// Initialize punch press simulation
 	struct pp_t pp;
 	
+	pp.use_init_pos = 1;
+	pp.x_init_pos = 0;
+	pp.y_init_pos = 0;
+	
 	pp_init(&pp);
+	
+	pp.x_axis.power = 32;
+	pp.y_axis.power = 45;
 
 	// Infinite loop
 	while (1) {
 		//HAL_Delay(100); // 100ms
-		pp_update(&pp, 100000);
+		pp_update(&pp, 1000);
 		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+		
+		iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
 	}
 }
 
