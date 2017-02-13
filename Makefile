@@ -140,5 +140,8 @@ flash: $(ELF)
 # Debug
 debug: $(ELF)
 	$(GDB) $(ELF) -ex "target remote | openocd -f board/stm32f4discovery.cfg --pipe" -ex load
+	
+tty:
+	
 
 .PHONY: all flash clean debug

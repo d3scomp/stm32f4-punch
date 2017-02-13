@@ -47,6 +47,7 @@ static void SystemClock_Config(void);
 static void Error_Handler(void);
 
 UART_HandleTypeDef huart2;
+TIM_HandleTypeDef htim2;
 
 /** Custom implementation of write function. This would be syscall, but since
  * we do not have OS we need to implement it ourself by print to console. */
@@ -101,6 +102,48 @@ int main(void) {
 	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
 	HAL_UART_Init(&huart2);
 	
+	// Enable GPIO pins for PWM capture
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+//	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin   = GPIO_PIN_6 | GPIO_PIN_7;
+	GPIO_Init.Mode  = GPIO_MODE_AF_PP;
+	GPIO_Init.Pull  = GPIO_PULLUP;
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
+	GPIO_Init.Alternate = GPIO_AF2_TIM4;
+	HAL_GPIO_Init(GPIOB, &GPIO_Init);
+
+	// Enable timer for PWM cpature
+	__HAL_RCC_TIM4_CLK_ENABLE();
+	htim2.Instance = TIM4;
+	htim2.Init.Prescaler = 0;
+	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim2.Init.Period = 0xFFFF;
+    htim2.Init.ClockDivision = 0;
+	HAL_TIM_IC_Init(&htim2);
+		
+	// Enable PWM input capture
+	TIM_IC_InitTypeDef IC_Init;
+	IC_Init.ICFilter = 0;
+	IC_Init.ICPolarity = TIM_ICPOLARITY_FALLING;
+	IC_Init.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+	IC_Init.ICPrescaler = TIM_ICPSC_DIV1;
+	
+	HAL_TIM_IC_ConfigChannel(&htim2, &IC_Init, TIM_CHANNEL_1);
+	HAL_TIM_IC_ConfigChannel(&htim2, &IC_Init, TIM_CHANNEL_2);
+/*
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_2);*/
+
+
+	TIM_SlaveConfigTypeDef   sSlaveConfig;
+	sSlaveConfig.SlaveMode     = TIM_SLAVEMODE_RESET;
+	sSlaveConfig.InputTrigger  = TIM_TS_TI2FP2;
+	HAL_TIM_SlaveConfigSynchronization(&htim2, &sSlaveConfig);
+
+
+	HAL_TIM_IC_Start(&htim2, TIM_CHANNEL_1);
+	HAL_TIM_IC_Start(&htim2, TIM_CHANNEL_2);
+	
 	// Do something with LEDs to demonstrate that the code is running
 	for(int cnt = 0; cnt < 8; cnt++) {
 		switch(cnt % 4) {
@@ -110,7 +153,7 @@ int main(void) {
 			case 3: HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);  break;
 		}
 		
-		iprintf("Hello world: %d\n", cnt);
+		iprintf("Hello world: %d\r\n", cnt);
 		
 		HAL_Delay(100); // 100ms
 	}
@@ -133,7 +176,12 @@ int main(void) {
 		pp_update(&pp, 1000);
 		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 		
-		iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
+	//	iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
+		
+		uint32_t ch1 =  HAL_TIM_ReadCapturedValue(&htim2, TIM_CHANNEL_1);
+		uint32_t ch2 =  HAL_TIM_ReadCapturedValue(&htim2, TIM_CHANNEL_2);
+		
+		iprintf("Duty cycle: ch1: %ld, ch2: %ld, tim2: %ld\r\n", ch1, ch2, __HAL_TIM_GetCounter(&htim2));
 	}
 }
 
