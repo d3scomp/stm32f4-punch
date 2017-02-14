@@ -40,50 +40,66 @@
 #include "simulation.h"
 #include "LEDDriver.h"
 #include "PWMCaptureDriver.h"
+#include "UARTDriver.h"
 
 #include <stdio.h>
 
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 
-extern "C" {
-	int _write(int file, char* ptr, int len);
+// IN	PA0&PA1	motor X pwm
+// IN	PD6&PD7	motor X pwm
+
+// IN	PD0		motor X direction
+// IN	PD1		motor Y direction
+
+// IN	PD2		punch control
+
+// OUT	PD3		motor X encoder A
+// OUT	PD4		motor X encoder B
+// OUT	PD5		motor Y encoder A
+// OUT	PD6		motor Y encoder B
+
+// OUT 	PD7		safe zone L
+// OUT 	PD8		safe zone R
+// OUT 	PD9		safe zone T
+// OUT 	PD10	safe zone B
+
+// OUT	PD11	head up (head ready to move or punch)
+// OUT	PD12	FAIL
+
+
+void initPunchInput() {
+	// Enable input pins
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2;
+	GPIO_Init.Mode = GPIO_MODE_INPUT;
+	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
+	GPIO_Init.Alternate = 0;
+	HAL_GPIO_Init(GPIOD, &GPIO_Init);
 }
 
-UART_HandleTypeDef huart2;
-TIM_HandleTypeDef htim4;
-TIM_HandleTypeDef htim5;
-
-/** Custom implementation of write function. This would be syscall, but since
- * we do not have OS we need to implement it ourself by print to console. */
-int _write(int file, char* ptr, int len) {
-	HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
-	return len;
+void initPunchOutput() {
+	// Enable input pins
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin = GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
+	GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
+	GPIO_Init.Alternate = 0;
+	HAL_GPIO_Init(GPIOD, &GPIO_Init);
 }
 
-void initUART() {
-	// Enable pins used by UART2, set them to their alterantive (UART2) function
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	GPIO_InitTypeDef GPIO_InitStruct;
-	GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
-	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	// Enable UART2
-	__HAL_RCC_USART2_CLK_ENABLE();
-	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 921600;
-	huart2.Init.WordLength = UART_WORDLENGTH_8B;
-	huart2.Init.StopBits = UART_STOPBITS_1;
-	huart2.Init.Parity = UART_PARITY_NONE;
-	huart2.Init.Mode = UART_MODE_TX_RX;
-	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-	HAL_UART_Init(&huart2);
+void writeEncoders(bool xA, bool xB, bool yA, bool yB) {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, xA?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, xB?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, yA?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, yB?GPIO_PIN_SET:GPIO_PIN_RESET);
 }
+
 
 int main(void) {
 	/* STM32F4xx HAL library initialization:
@@ -100,19 +116,18 @@ int main(void) {
 	// Configure the system clock to 168 MHz
 	SystemClock_Config();
 
-	//initLEDs();
 	LEDDriver leds;
 	leds.init();
 	
 	initUART();
 	
-	//initPWMCaptureX();
+	initPunchInput();
+	initPunchOutput();
+	
 	PWMCaptureDriver pwmCaptureX(4, 168);
 	PWMCaptureDriver pwmCaptureY(5, 168);
 	pwmCaptureX.init();
 	pwmCaptureY.init();
-	
-	//initPWMCaptureY();
 	
 	// Do something with LEDs to demonstrate that the code is running
 	for(int cnt = 0; cnt < 8; cnt++) {
@@ -148,7 +163,7 @@ int main(void) {
 		
 	//	iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
 		
-		iprintf("Duty cycle: T4: %d, T5: %d\r\n", pwmCaptureX.getDutyCycle(100), pwmCaptureY.getDutyCycle(100));
+		iprintf("Duty cycle: T4: %d, T5: %d\r\n", pwmCaptureX.getDutyCycle(128), pwmCaptureY.getDutyCycle(128));
 	}
 }
 
