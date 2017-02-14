@@ -39,6 +39,7 @@
 #include "main.h"
 #include "simulation.h"
 #include "LEDDriver.h"
+#include "PWMCaptureDriver.h"
 
 #include <stdio.h>
 
@@ -84,90 +85,6 @@ void initUART() {
 	HAL_UART_Init(&huart2);
 }
 
-void initPWMCaptureX() {
-	// Enable GPIO pins for PWM capture - X axis
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	GPIO_InitTypeDef GPIO_Init;
-	GPIO_Init.Pin   = GPIO_PIN_6 | GPIO_PIN_7;
-	GPIO_Init.Mode  = GPIO_MODE_AF_PP;
-	GPIO_Init.Pull  = GPIO_PULLUP;
-	GPIO_Init.Speed = GPIO_SPEED_HIGH;
-	GPIO_Init.Alternate = GPIO_AF2_TIM4;
-	HAL_GPIO_Init(GPIOB, &GPIO_Init);
-		
-	// Enable timer4 for PWM capture - X axis
-	__HAL_RCC_TIM4_CLK_ENABLE();
-	htim4.Instance = TIM4;
-	htim4.Init.Prescaler = 0;
-	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim4.Init.Period = 0xFFFF;
-    htim4.Init.ClockDivision = 0;
-	HAL_TIM_IC_Init(&htim4);
-	
-	// Enable PWM input capture - X axis
-	TIM_IC_InitTypeDef IC_Init;
-	IC_Init.ICFilter = 0;
-	IC_Init.ICPolarity = TIM_ICPOLARITY_FALLING;
-	IC_Init.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	IC_Init.ICPrescaler = TIM_ICPSC_DIV1;
-	
-	HAL_TIM_IC_ConfigChannel(&htim4, &IC_Init, TIM_CHANNEL_1);
-	HAL_TIM_IC_ConfigChannel(&htim4, &IC_Init, TIM_CHANNEL_2);
-	
-	TIM_SlaveConfigTypeDef sSlaveConfig;
-	sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-	sSlaveConfig.InputTrigger = TIM_TS_TI2FP2;
-	sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
-	sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1 ;
-	sSlaveConfig.TriggerFilter = 0;
-	HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
-
-	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1);
-	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_2);
-}
-
-void initPWMCaptureY() {
-	// Enable GPIO pins for PWM capture - Y axis
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	GPIO_InitTypeDef GPIO_Init;
-	GPIO_Init.Pin   = GPIO_PIN_0 | GPIO_PIN_1;
-	GPIO_Init.Mode  = GPIO_MODE_AF_PP;
-	GPIO_Init.Pull  = GPIO_PULLUP;
-	GPIO_Init.Speed = GPIO_SPEED_HIGH;
-	GPIO_Init.Alternate = GPIO_AF2_TIM5;
-	HAL_GPIO_Init(GPIOA, &GPIO_Init);
-		
-	// Enable timer5 for PWM capture - Y axis
-	__HAL_RCC_TIM5_CLK_ENABLE();
-	htim5.Instance = TIM5;
-	htim5.Init.Prescaler = 0;
-	htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim5.Init.Period = 0xFFFF;
-    htim5.Init.ClockDivision = 0;
-	HAL_TIM_IC_Init(&htim5);
-	
-	// Enable PWM input capture - Y axis
-	TIM_IC_InitTypeDef IC_Init;
-	IC_Init.ICFilter = 0;
-	IC_Init.ICPolarity = TIM_ICPOLARITY_FALLING;
-	IC_Init.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	IC_Init.ICPrescaler = TIM_ICPSC_DIV1;
-	
-	HAL_TIM_IC_ConfigChannel(&htim5, &IC_Init, TIM_CHANNEL_1);
-	HAL_TIM_IC_ConfigChannel(&htim5, &IC_Init, TIM_CHANNEL_2);
-	
-	TIM_SlaveConfigTypeDef sSlaveConfig1;
-	sSlaveConfig1.SlaveMode = TIM_SLAVEMODE_RESET;
-	sSlaveConfig1.InputTrigger = TIM_TS_TI2FP2;
-	sSlaveConfig1.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
-	sSlaveConfig1.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1 ;
-	sSlaveConfig1.TriggerFilter = 0;
-	HAL_TIM_SlaveConfigSynchronization(&htim5, &sSlaveConfig1);
-	
-	HAL_TIM_IC_Start(&htim5, TIM_CHANNEL_1);
-	HAL_TIM_IC_Start(&htim5, TIM_CHANNEL_2);
-}
-
 int main(void) {
 	/* STM32F4xx HAL library initialization:
 		- Configure the Flash prefetch, Flash preread and Buffer caches
@@ -189,8 +106,13 @@ int main(void) {
 	
 	initUART();
 	
-	initPWMCaptureX();
-	initPWMCaptureY();
+	//initPWMCaptureX();
+	PWMCaptureDriver pwmCaptureX(4, 168);
+	PWMCaptureDriver pwmCaptureY(5, 168);
+	pwmCaptureX.init();
+	pwmCaptureY.init();
+	
+	//initPWMCaptureY();
 	
 	// Do something with LEDs to demonstrate that the code is running
 	for(int cnt = 0; cnt < 8; cnt++) {
@@ -226,13 +148,7 @@ int main(void) {
 		
 	//	iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
 		
-		uint32_t T4ch1 =  HAL_TIM_ReadCapturedValue(&htim4, TIM_CHANNEL_1);
-		uint32_t T4ch2 =  HAL_TIM_ReadCapturedValue(&htim4, TIM_CHANNEL_2);
-		uint32_t T5ch1 =  HAL_TIM_ReadCapturedValue(&htim5, TIM_CHANNEL_1);
-		uint32_t T5ch2 =  HAL_TIM_ReadCapturedValue(&htim5, TIM_CHANNEL_2);
-		
-		
-		iprintf("Duty cycle: T4ch1: %ld, T4ch2: %ld, T5ch1: %ld, T5ch2: %ld, tim4: %ld, tim5: %ld\r\n", T4ch1, T4ch2, T5ch1, T5ch2, __HAL_TIM_GetCounter(&htim4), __HAL_TIM_GetCounter(&htim5));
+		iprintf("Duty cycle: T4: %d, T5: %d\r\n", pwmCaptureX.getDutyCycle(100), pwmCaptureY.getDutyCycle(100));
 	}
 }
 
