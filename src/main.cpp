@@ -41,10 +41,12 @@
 
 #include <stdio.h>
 
-
-
 static void SystemClock_Config(void);
 static void Error_Handler(void);
+
+extern "C" {
+	int _write(int file, char* ptr, int len);
+}
 
 UART_HandleTypeDef huart2;
 TIM_HandleTypeDef htim4;

@@ -127,7 +127,11 @@ $(ELF): $(APP_OBJECTS) $(HAL_OBJECTS)
 
 # Compile C source into object
 %.o : %.c
-	$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
+	$(CXX) -c $(CFLAGS) $(INCLUDES) $< -o $@
+	
+# Compile C++ source into object
+%.o : %.cpp
+	$(CXX) -c $(CFLAGS) $(INCLUDES) $< -o $@
 
 # Compile assembler source into object
 %.o : %.s
