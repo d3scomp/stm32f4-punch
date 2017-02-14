@@ -57,6 +57,125 @@ int _write(int file, char* ptr, int len) {
 	return len;
 }
 
+// Enable GPIO pins connected to LEDs and set them as output
+void initLEDs() {
+	__HAL_RCC_GPIOD_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin   = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
+	GPIO_Init.Mode  = GPIO_MODE_OUTPUT_PP;
+	GPIO_Init.Pull  = GPIO_NOPULL;
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
+	HAL_GPIO_Init(GPIOD, &GPIO_Init);
+}
+
+void initUART() {
+	// Enable pins used by UART2, set them to their alterantive (UART2) function
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_InitStruct.Pin = GPIO_PIN_2 | GPIO_PIN_3;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+	// Enable UART2
+	__HAL_RCC_USART2_CLK_ENABLE();
+	huart2.Instance = USART2;
+	huart2.Init.BaudRate = 921600;
+	huart2.Init.WordLength = UART_WORDLENGTH_8B;
+	huart2.Init.StopBits = UART_STOPBITS_1;
+	huart2.Init.Parity = UART_PARITY_NONE;
+	huart2.Init.Mode = UART_MODE_TX_RX;
+	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+	HAL_UART_Init(&huart2);
+}
+
+void initPWMCaptureX() {
+	// Enable GPIO pins for PWM capture - X axis
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin   = GPIO_PIN_6 | GPIO_PIN_7;
+	GPIO_Init.Mode  = GPIO_MODE_AF_PP;
+	GPIO_Init.Pull  = GPIO_PULLUP;
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
+	GPIO_Init.Alternate = GPIO_AF2_TIM4;
+	HAL_GPIO_Init(GPIOB, &GPIO_Init);
+		
+	// Enable timer4 for PWM capture - X axis
+	__HAL_RCC_TIM4_CLK_ENABLE();
+	htim4.Instance = TIM4;
+	htim4.Init.Prescaler = 0;
+	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim4.Init.Period = 0xFFFF;
+    htim4.Init.ClockDivision = 0;
+	HAL_TIM_IC_Init(&htim4);
+	
+	// Enable PWM input capture - X axis
+	TIM_IC_InitTypeDef IC_Init;
+	IC_Init.ICFilter = 0;
+	IC_Init.ICPolarity = TIM_ICPOLARITY_FALLING;
+	IC_Init.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+	IC_Init.ICPrescaler = TIM_ICPSC_DIV1;
+	
+	HAL_TIM_IC_ConfigChannel(&htim4, &IC_Init, TIM_CHANNEL_1);
+	HAL_TIM_IC_ConfigChannel(&htim4, &IC_Init, TIM_CHANNEL_2);
+	
+	TIM_SlaveConfigTypeDef sSlaveConfig;
+	sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
+	sSlaveConfig.InputTrigger = TIM_TS_TI2FP2;
+	sSlaveConfig.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+	sSlaveConfig.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1 ;
+	sSlaveConfig.TriggerFilter = 0;
+	HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
+
+	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1);
+	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_2);
+}
+
+void initPWMCaptureY() {
+	// Enable GPIO pins for PWM capture - Y axis
+	__HAL_RCC_GPIOA_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin   = GPIO_PIN_0 | GPIO_PIN_1;
+	GPIO_Init.Mode  = GPIO_MODE_AF_PP;
+	GPIO_Init.Pull  = GPIO_PULLUP;
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
+	GPIO_Init.Alternate = GPIO_AF2_TIM5;
+	HAL_GPIO_Init(GPIOA, &GPIO_Init);
+		
+	// Enable timer5 for PWM capture - Y axis
+	__HAL_RCC_TIM5_CLK_ENABLE();
+	htim5.Instance = TIM5;
+	htim5.Init.Prescaler = 0;
+	htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim5.Init.Period = 0xFFFF;
+    htim5.Init.ClockDivision = 0;
+	HAL_TIM_IC_Init(&htim5);
+	
+	// Enable PWM input capture - Y axis
+	TIM_IC_InitTypeDef IC_Init;
+	IC_Init.ICFilter = 0;
+	IC_Init.ICPolarity = TIM_ICPOLARITY_FALLING;
+	IC_Init.ICSelection = TIM_ICSELECTION_INDIRECTTI;
+	IC_Init.ICPrescaler = TIM_ICPSC_DIV1;
+	
+	HAL_TIM_IC_ConfigChannel(&htim5, &IC_Init, TIM_CHANNEL_1);
+	HAL_TIM_IC_ConfigChannel(&htim5, &IC_Init, TIM_CHANNEL_2);
+	
+	TIM_SlaveConfigTypeDef sSlaveConfig1;
+	sSlaveConfig1.SlaveMode = TIM_SLAVEMODE_RESET;
+	sSlaveConfig1.InputTrigger = TIM_TS_TI2FP2;
+	sSlaveConfig1.TriggerPolarity = TIM_TRIGGERPOLARITY_RISING;
+	sSlaveConfig1.TriggerPrescaler = TIM_TRIGGERPRESCALER_DIV1 ;
+	sSlaveConfig1.TriggerFilter = 0;
+	HAL_TIM_SlaveConfigSynchronization(&htim5, &sSlaveConfig1);
+	
+	HAL_TIM_IC_Start(&htim5, TIM_CHANNEL_1);
+	HAL_TIM_IC_Start(&htim5, TIM_CHANNEL_2);
+}
+
 int main(void) {
 	/* STM32F4xx HAL library initialization:
 		- Configure the Flash prefetch, Flash preread and Buffer caches
@@ -72,109 +191,12 @@ int main(void) {
 	// Configure the system clock to 168 MHz
 	SystemClock_Config();
 
-	// Enable GPIO pins connected to LEDs and set them as output */
-	__HAL_RCC_GPIOD_CLK_ENABLE();
-	GPIO_InitTypeDef GPIO_Init;
-	GPIO_Init.Pin   = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
-	GPIO_Init.Mode  = GPIO_MODE_OUTPUT_PP;
-	GPIO_Init.Pull  = GPIO_NOPULL;
-	GPIO_Init.Speed = GPIO_SPEED_HIGH;
-	HAL_GPIO_Init(GPIOD, &GPIO_Init);
+	initLEDs();
 	
-	// Enable pins used by UART2, set them to their alterantive (UART2) function
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	GPIO_InitTypeDef GPIO_InitStruct2;
-	GPIO_InitStruct2.Pin = GPIO_PIN_2 | GPIO_PIN_3;
-	GPIO_InitStruct2.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct2.Pull = GPIO_PULLUP;
-	GPIO_InitStruct2.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStruct2.Alternate = GPIO_AF7_USART2;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct2);
-
-	// Enable UART2
-	__HAL_RCC_USART2_CLK_ENABLE();
-	huart2.Instance = USART2;
-	huart2.Init.BaudRate = 921600;
-	huart2.Init.WordLength = UART_WORDLENGTH_8B;
-	huart2.Init.StopBits = UART_STOPBITS_1;
-	huart2.Init.Parity = UART_PARITY_NONE;
-	huart2.Init.Mode = UART_MODE_TX_RX;
-	huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-	HAL_UART_Init(&huart2);
+	initUART();
 	
-	// Enable GPIO pins for PWM capture - X axis
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-//	GPIO_InitTypeDef GPIO_Init;
-	GPIO_Init.Pin   = GPIO_PIN_6 | GPIO_PIN_7;
-	GPIO_Init.Mode  = GPIO_MODE_AF_PP;
-	GPIO_Init.Pull  = GPIO_PULLUP;
-	GPIO_Init.Speed = GPIO_SPEED_HIGH;
-	GPIO_Init.Alternate = GPIO_AF2_TIM4;
-	HAL_GPIO_Init(GPIOB, &GPIO_Init);
-	
-	// Enable GPIO pins for PWM capture - Y axis
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-//	GPIO_InitTypeDef GPIO_Init;
-	GPIO_Init.Pin   = GPIO_PIN_0 | GPIO_PIN_1;
-	GPIO_Init.Mode  = GPIO_MODE_AF_PP;
-	GPIO_Init.Pull  = GPIO_PULLUP;
-	GPIO_Init.Speed = GPIO_SPEED_HIGH;
-	GPIO_Init.Alternate = GPIO_AF2_TIM5;
-	HAL_GPIO_Init(GPIOA, &GPIO_Init);
-
-	// Enable timer4 for PWM capture - X axis
-	__HAL_RCC_TIM4_CLK_ENABLE();
-	htim4.Instance = TIM4;
-	htim4.Init.Prescaler = 0;
-	htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim4.Init.Period = 0xFFFF;
-    htim4.Init.ClockDivision = 0;
-	HAL_TIM_IC_Init(&htim4);
-	
-	// Enable timer5 for PWM capture - Y axis
-	__HAL_RCC_TIM5_CLK_ENABLE();
-	htim5.Instance = TIM5;
-	htim5.Init.Prescaler = 0;
-	htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim5.Init.Period = 0xFFFF;
-    htim5.Init.ClockDivision = 0;
-	HAL_TIM_IC_Init(&htim5);
-	
-	// Enable PWM input capture - X axis
-	TIM_IC_InitTypeDef IC_Init;
-	IC_Init.ICFilter = 0;
-	IC_Init.ICPolarity = TIM_ICPOLARITY_FALLING;
-	IC_Init.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	IC_Init.ICPrescaler = TIM_ICPSC_DIV1;
-	
-	HAL_TIM_IC_ConfigChannel(&htim4, &IC_Init, TIM_CHANNEL_1);
-	HAL_TIM_IC_ConfigChannel(&htim4, &IC_Init, TIM_CHANNEL_2);
-
-	TIM_SlaveConfigTypeDef sSlaveConfig;
-	sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-	sSlaveConfig.InputTrigger = TIM_TS_TI2FP2;
-	HAL_TIM_SlaveConfigSynchronization(&htim4, &sSlaveConfig);
-
-
-	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_1);
-	HAL_TIM_IC_Start(&htim4, TIM_CHANNEL_2);
-	
-	// Enable PWM input capture - Y axis
-	IC_Init.ICFilter = 0;
-	IC_Init.ICPolarity = TIM_ICPOLARITY_FALLING;
-	IC_Init.ICSelection = TIM_ICSELECTION_INDIRECTTI;
-	IC_Init.ICPrescaler = TIM_ICPSC_DIV1;
-	
-	HAL_TIM_IC_ConfigChannel(&htim5, &IC_Init, TIM_CHANNEL_1);
-	HAL_TIM_IC_ConfigChannel(&htim5, &IC_Init, TIM_CHANNEL_2);
-
-	sSlaveConfig.SlaveMode = TIM_SLAVEMODE_RESET;
-	sSlaveConfig.InputTrigger = TIM_TS_TI2FP2;
-	HAL_TIM_SlaveConfigSynchronization(&htim5, &sSlaveConfig);
-
-	HAL_TIM_IC_Start(&htim5, TIM_CHANNEL_1);
-	HAL_TIM_IC_Start(&htim5, TIM_CHANNEL_2);
+	initPWMCaptureX();
+	initPWMCaptureY();
 	
 	// Do something with LEDs to demonstrate that the code is running
 	for(int cnt = 0; cnt < 8; cnt++) {
