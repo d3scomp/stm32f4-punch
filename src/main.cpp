@@ -38,6 +38,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "simulation.h"
+#include "LEDDriver.h"
 
 #include <stdio.h>
 
@@ -57,17 +58,6 @@ TIM_HandleTypeDef htim5;
 int _write(int file, char* ptr, int len) {
 	HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
 	return len;
-}
-
-// Enable GPIO pins connected to LEDs and set them as output
-void initLEDs() {
-	__HAL_RCC_GPIOD_CLK_ENABLE();
-	GPIO_InitTypeDef GPIO_Init;
-	GPIO_Init.Pin   = GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14 | GPIO_PIN_15;
-	GPIO_Init.Mode  = GPIO_MODE_OUTPUT_PP;
-	GPIO_Init.Pull  = GPIO_NOPULL;
-	GPIO_Init.Speed = GPIO_SPEED_HIGH;
-	HAL_GPIO_Init(GPIOD, &GPIO_Init);
 }
 
 void initUART() {
@@ -193,7 +183,9 @@ int main(void) {
 	// Configure the system clock to 168 MHz
 	SystemClock_Config();
 
-	initLEDs();
+	//initLEDs();
+	LEDDriver leds;
+	leds.init();
 	
 	initUART();
 	
@@ -203,10 +195,10 @@ int main(void) {
 	// Do something with LEDs to demonstrate that the code is running
 	for(int cnt = 0; cnt < 8; cnt++) {
 		switch(cnt % 4) {
-			case 0: HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);  break;
-			case 1: HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);  break;
-			case 2: HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);  break;
-			case 3: HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);  break;
+			case 0: leds.toggleOrange(); break;
+			case 1: leds.toggleRed(); break;
+			case 2: leds.toggleBlue(); break;
+			case 3: leds.toggleGreen(); break;
 		}
 		
 		iprintf("Hello world: %d\r\n", cnt);
@@ -230,7 +222,7 @@ int main(void) {
 	while (1) {
 		//HAL_Delay(100); // 100ms
 		pp_update(&pp, 1000);
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+		leds.toggleGreen();
 		
 	//	iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
 		
