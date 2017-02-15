@@ -100,6 +100,21 @@ void writeEncoders(bool xA, bool xB, bool yA, bool yB) {
 	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, yB?GPIO_PIN_SET:GPIO_PIN_RESET);
 }
 
+void writeSafeZone(bool left, bool right, bool top, bool bottom) {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7, left?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, right?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, top?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, bottom?GPIO_PIN_SET:GPIO_PIN_RESET);
+}
+
+void writeHeadUp(bool headUp) {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11, headUp?GPIO_PIN_SET:GPIO_PIN_RESET);
+}
+
+void writeFail(bool fail) {
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, fail?GPIO_PIN_SET:GPIO_PIN_RESET);
+}
+
 bool readMotorXDirection() {
 	return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_0);
 }
@@ -164,24 +179,42 @@ int main(void) {
 	
 	// Infinite loop
 	while (1) {
-		//HAL_Delay(100); // 100ms
-		pp_update(&pp, 1000);
-		leds.toggleGreen();
+		// Obtain motor power
+		const uint8_t xDuty = pwmCaptureX.getDutyCycle(128);
+		const uint8_t yDuty = pwmCaptureY.getDutyCycle(128);
+		const bool xDir = readMotorXDirection();
+		const bool yDir = readMotorYDirection();
+		const int8_t xPower = xDir?xDuty:-(128-xDuty);
+		const int8_t yPower = yDir?yDuty:-(128-yDuty);
 		
-		iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
-		
-		uint8_t xDuty = pwmCaptureX.getDutyCycle(128);
-		uint8_t yDuty = pwmCaptureY.getDutyCycle(128);
-		bool xDir = readMotorXDirection();
-		bool yDir = readMotorYDirection();
-		
-		int8_t xPower = xDir?xDuty:-(128-xDuty);
-		int8_t yPower = yDir?yDuty:-(128-yDuty);
-		
+		// Pass input to simulation
 		pp.x_axis.power = xPower;
 		pp.y_axis.power = yPower;
 		
-//		iprintf("Power(DutyCycle): X: %03d (%03d), Y: %03d (%03d)\r\n", xPower, xDuty, yPower, yDuty);
+		//		iprintf("Power(DutyCycle): X: %03d (%03d), Y: %03d (%03d)\r\n", xPower, xDuty, yPower, yDuty);
+		
+		//HAL_Delay(100); // 100ms
+		// TODO: Measure time and use it
+		uint32_t state = pp_update(&pp, 1000);
+		iprintf("[%ld, %ld] state:%ld f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, state, pp.failed);
+		
+		// Get output from simulation
+		writeEncoders(state & US_ENC_X0,
+			state & US_ENC_X1,
+			state & US_ENC_Y0,
+			state & US_ENC_Y1);
+		
+		writeSafeZone(state & US_SAFE_L,
+			state & US_SAFE_R,
+			state & US_SAFE_T,
+			state & US_SAFE_B);
+		
+		writeHeadUp(state & US_HEAD_UP);
+		
+		writeFail(state & US_FAIL);
+		
+		// Signal simulation step (used to analyze simulator performance)
+		leds.toggleGreen();
 	}
 }
 
