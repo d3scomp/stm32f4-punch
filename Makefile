@@ -1,5 +1,5 @@
 # Project (adjust to match your needs)
-PROJECT=hello
+PROJECT=punchpressim
 ELF = $(PROJECT).elf
 
 # Library paths (adjust to match your needs)
