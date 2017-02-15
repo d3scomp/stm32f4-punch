@@ -47,8 +47,8 @@
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 
-// IN	PA0&PA1	motor X pwm
-// IN	PD6&PD7	motor X pwm
+// IN	PA0&PA1	motor X PWM
+// IN	PB6&PB7	motor Y PWM
 
 // IN	PD0		motor X direction
 // IN	PD1		motor Y direction
@@ -100,6 +100,13 @@ void writeEncoders(bool xA, bool xB, bool yA, bool yB) {
 	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, yB?GPIO_PIN_SET:GPIO_PIN_RESET);
 }
 
+bool readMotorXDirection() {
+	return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_0);
+}
+
+bool readMotorYDirection() {
+	return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_1);
+}
 
 int main(void) {
 	/* STM32F4xx HAL library initialization:
@@ -147,13 +154,13 @@ int main(void) {
 	struct pp_t pp;
 	
 	pp.use_init_pos = 1;
-	pp.x_init_pos = 0;
-	pp.y_init_pos = 0;
+	pp.x_init_pos = 5000;
+	pp.y_init_pos = 5000;
 	
 	pp_init(&pp);
 	
-	pp.x_axis.power = 32;
-	pp.y_axis.power = 45;
+	/*pp.x_axis.power = 32;
+	pp.y_axis.power = 45;*/
 	
 	// Infinite loop
 	while (1) {
@@ -161,9 +168,20 @@ int main(void) {
 		pp_update(&pp, 1000);
 		leds.toggleGreen();
 		
-	//	iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
+		iprintf("[%ld, %ld] f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, pp.failed);
 		
-		iprintf("Duty cycle: T4: %d, T5: %d\r\n", pwmCaptureX.getDutyCycle(128), pwmCaptureY.getDutyCycle(128));
+		uint8_t xDuty = pwmCaptureX.getDutyCycle(128);
+		uint8_t yDuty = pwmCaptureY.getDutyCycle(128);
+		bool xDir = readMotorXDirection();
+		bool yDir = readMotorYDirection();
+		
+		int8_t xPower = xDir?xDuty:-(128-xDuty);
+		int8_t yPower = yDir?yDuty:-(128-yDuty);
+		
+		pp.x_axis.power = xPower;
+		pp.y_axis.power = yPower;
+		
+//		iprintf("Power(DutyCycle): X: %03d (%03d), Y: %03d (%03d)\r\n", xPower, xDuty, yPower, yDuty);
 	}
 }
 
