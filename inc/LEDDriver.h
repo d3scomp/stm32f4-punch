@@ -17,18 +17,18 @@ public:
 	}
 	
 	void toggleOrange() {
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
 	}
 	
 	void toggleRed() {
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_12);
 	}
 	
 	void toggleBlue() {
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_13);
 	}
 	
 	void toggleGreen() {
-		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
+		HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_14);
 	}
 };
