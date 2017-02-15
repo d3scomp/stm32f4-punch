@@ -123,6 +123,24 @@ bool readMotorYDirection() {
 	return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_1);
 }
 
+TIM_HandleTypeDef htim2;
+const uint32_t TIM2_TICK_PER_US = 84;
+
+void initTimeCounter() {
+	__HAL_RCC_TIM2_CLK_ENABLE();
+	htim2.Instance = TIM2;
+	htim2.Init.Prescaler = 0;
+	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+	htim2.Init.Period = 0xffffffff;
+	htim2.Init.ClockDivision = 0;
+	HAL_TIM_Base_Init(&htim2);
+	HAL_TIM_Base_Start(&htim2);
+}
+
+uint32_t getTimerCounter() {
+	return __HAL_TIM_GetCounter(&htim2);
+}
+
 int main(void) {
 	/* STM32F4xx HAL library initialization:
 		- Configure the Flash prefetch, Flash preread and Buffer caches
@@ -165,17 +183,21 @@ int main(void) {
 		HAL_Delay(100); // 100ms
 	}
 	
+	initTimeCounter();
+	
 	// Initialize punch press simulation
 	struct pp_t pp;
 	
 	pp.use_init_pos = 1;
-	pp.x_init_pos = 5000;
-	pp.y_init_pos = 5000;
+	pp.x_init_pos = 100000000;
+	pp.y_init_pos = 100000000;
 	
 	pp_init(&pp);
 	
 	/*pp.x_axis.power = 32;
 	pp.y_axis.power = 45;*/
+	
+	uint32_t tim2last = getTimerCounter();
 	
 	// Infinite loop
 	while (1) {
@@ -191,12 +213,14 @@ int main(void) {
 		pp.x_axis.power = xPower;
 		pp.y_axis.power = yPower;
 		
-		//		iprintf("Power(DutyCycle): X: %03d (%03d), Y: %03d (%03d)\r\n", xPower, xDuty, yPower, yDuty);
+		//iprintf("Power(DutyCycle): X: %03d (%03d), Y: %03d (%03d)\r\n", xPower, xDuty, yPower, yDuty);
 		
-		//HAL_Delay(100); // 100ms
-		// TODO: Measure time and use it
-		uint32_t state = pp_update(&pp, 1000);
-		iprintf("[%ld, %ld] state:%ld f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, state, pp.failed);
+		// Make simulation step
+		uint32_t tim2new = getTimerCounter();
+		uint32_t state = pp_update(&pp, (tim2new - tim2last) / TIM2_TICK_PER_US);
+		tim2last = tim2new;
+		//iprintf("[%ld, %ld] state:%ld f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, state, pp.failed);
+		//iprintf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
 		// Get output from simulation
 		writeEncoders(state & US_ENC_X0,
