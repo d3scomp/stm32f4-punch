@@ -47,26 +47,26 @@
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 
-// IN	PA0&PA1	motor X PWM
-// IN	PB6&PB7	motor Y PWM
+// IN	PA0&PA1	motor X PWM - brown + jumper
+// IN	PB6&PB7	motor Y PWM - red + jumper
 
-// IN	PD0		motor X direction
-// IN	PD1		motor Y direction
+// IN	PD0		motor X direction - orange
+// IN	PD1		motor Y direction - yellow
 
-// IN	PD2		punch control
+// IN	PD2		punch control - violet
 
-// OUT	PD3		motor X encoder A
-// OUT	PD4		motor X encoder B
-// OUT	PD5		motor Y encoder A
-// OUT	PD6		motor Y encoder B
+// OUT	PD3		motor X encoder A - red
+// OUT	PD4		motor X encoder B - orange
+// OUT	PD5		motor Y encoder A - yellow
+// OUT	PD6		motor Y encoder B - green
 
-// OUT 	PD7		safe zone L
-// OUT 	PD8		safe zone R
-// OUT 	PD9		safe zone T
-// OUT 	PD10	safe zone B
+// OUT 	PD7		safe zone L - blue
+// OUT 	PD8		safe zone R - red
+// OUT 	PD9		safe zone T - orange
+// OUT 	PD10	safe zone B - yellow
 
-// OUT	PD11	head up (head ready to move or punch)
-// OUT	PD12	FAIL
+// OUT	PD11	head up (head ready to move or punch) - green
+// OUT	PD12	FAIL - blue
 
 
 void initPunchInput() {
