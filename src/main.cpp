@@ -43,6 +43,7 @@
 #include "UARTDriver.h"
 
 #include <stdio.h>
+#include <cstring>
 
 static void SystemClock_Config(void);
 static void Error_Handler(void);
@@ -187,6 +188,7 @@ int main(void) {
 	
 	// Initialize punch press simulation
 	struct pp_t pp;
+	std::memset(&pp, 0, sizeof(pp_t));
 	
 	pp.use_init_pos = 1;
 	pp.x_init_pos = 100000000;
@@ -219,7 +221,7 @@ int main(void) {
 		uint32_t tim2new = getTimerCounter();
 		uint32_t state = pp_update(&pp, (tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		iprintf("[%ld, %ld] state:%ld f:%d\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, state, pp.failed);
+		iprintf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x_axis.head_pos, pp.y_axis.head_pos, state, pp.failed, (state & US_SAFE_L)?"1":"0", (state & US_SAFE_T)?"1":"0");
 		//iprintf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
 		// Get output from simulation
