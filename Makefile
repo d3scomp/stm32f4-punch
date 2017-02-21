@@ -37,7 +37,8 @@ src/system_stm32f4xx.o \
 src/startup_stm32f407xx.o \
 src/main.o \
 src/simulation.o \
-src/xorshift.o
+src/xorshift.o \
+src/UART.o
 
 # Currenly used HAL module objects
 HAL_OBJECTS=\

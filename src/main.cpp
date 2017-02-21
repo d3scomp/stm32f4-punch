@@ -40,7 +40,7 @@
 #include "simulation.h"
 #include "LEDDriver.h"
 #include "PWMCaptureDriver.h"
-#include "UARTDriver.h"
+#include "UART.h"
 
 #include <stdio.h>
 #include <cstring>
@@ -160,7 +160,7 @@ int main(void) {
 	LEDDriver leds;
 	leds.init();
 	
-	initUART();
+	initUARTConsole();
 	
 	initPunchInput();
 	initPunchOutput();
