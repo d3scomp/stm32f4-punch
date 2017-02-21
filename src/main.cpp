@@ -142,6 +142,10 @@ uint32_t getTimerCounter() {
 	return __HAL_TIM_GetCounter(&htim2);
 }
 
+const int X_AXIS_TIMER = 4;
+const int Y_AXIS_TIMER = 5;
+const int MAX_PWM_CAPTURE_TIMER_VALUE = 168;
+
 int main(void) {
 	/* STM32F4xx HAL library initialization:
 		- Configure the Flash prefetch, Flash preread and Buffer caches
@@ -165,8 +169,8 @@ int main(void) {
 	initPunchInput();
 	initPunchOutput();
 	
-	PWMCaptureDriver pwmCaptureX(4, 168);
-	PWMCaptureDriver pwmCaptureY(5, 168);
+	PWMCaptureDriver pwmCaptureX(X_AXIS_TIMER, MAX_PWM_CAPTURE_TIMER_VALUE);
+	PWMCaptureDriver pwmCaptureY(Y_AXIS_TIMER, MAX_PWM_CAPTURE_TIMER_VALUE);
 	pwmCaptureX.init();
 	pwmCaptureY.init();
 	
