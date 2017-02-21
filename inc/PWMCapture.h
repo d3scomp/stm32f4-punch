@@ -1,6 +1,7 @@
 #pragma once
 
-class PWMCaptureDriver {
+template<int TIMER_INDEX>
+class PWMCapture {
 private:
 	TIM_HandleTypeDef htim;
 	const int timerIndex;
@@ -14,8 +15,8 @@ private:
 	
 
 public:
-	PWMCaptureDriver(int timerIndex, const int maxTimerValue): 
-		timerIndex(timerIndex),
+	PWMCapture(const int maxTimerValue): 
+		timerIndex(TIMER_INDEX),
 		maxTimerValue(maxTimerValue) {
 			switch(timerIndex) {
 			case 4:
@@ -42,7 +43,7 @@ public:
 				break;
 			default:
 				iprintf("Unsupported timer index");
-		}
+			}
 		}
 	
 	void init() {

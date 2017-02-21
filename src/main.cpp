@@ -39,7 +39,7 @@
 #include "main.h"
 #include "simulation.h"
 #include "LEDDriver.h"
-#include "PWMCaptureDriver.h"
+#include "PWMCapture.h"
 #include "UART.h"
 
 #include <stdio.h>
@@ -169,8 +169,8 @@ int main(void) {
 	initPunchInput();
 	initPunchOutput();
 	
-	PWMCaptureDriver pwmCaptureX(X_AXIS_TIMER, MAX_PWM_CAPTURE_TIMER_VALUE);
-	PWMCaptureDriver pwmCaptureY(Y_AXIS_TIMER, MAX_PWM_CAPTURE_TIMER_VALUE);
+	PWMCapture<X_AXIS_TIMER> pwmCaptureX(MAX_PWM_CAPTURE_TIMER_VALUE);
+	PWMCapture<Y_AXIS_TIMER> pwmCaptureY(MAX_PWM_CAPTURE_TIMER_VALUE);
 	pwmCaptureX.init();
 	pwmCaptureY.init();
 	
