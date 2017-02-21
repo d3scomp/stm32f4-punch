@@ -38,6 +38,7 @@ src/startup_stm32f407xx.o \
 src/main.o \
 src/simulation.o \
 src/xorshift.o \
+src/PWMCapture.o \
 src/UART.o
 
 # Currenly used HAL module objects

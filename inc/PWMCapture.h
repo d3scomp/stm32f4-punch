@@ -1,10 +1,11 @@
 #pragma once
 
+#include "stm32f4xx_hal.h"
+
 template<int TIMER_INDEX>
 class PWMCapture {
 private:
 	TIM_HandleTypeDef htim;
-	const int timerIndex;
 	const uint16_t maxTimerValue;
 	
 	GPIO_TypeDef *GPIO;
@@ -15,36 +16,7 @@ private:
 	
 
 public:
-	PWMCapture(const int maxTimerValue): 
-		timerIndex(TIMER_INDEX),
-		maxTimerValue(maxTimerValue) {
-			switch(timerIndex) {
-			case 4:
-				__HAL_RCC_GPIOB_CLK_ENABLE();
-				__HAL_RCC_TIM4_CLK_ENABLE();
-				
-				GPIO = GPIOB;
-				GPIOPin = GPIO_PIN_6 | GPIO_PIN_7;
-				GPIOAlternate = GPIO_AF2_TIM4;
-				
-				timer = TIM4;
-				
-				break;
-			case 5:
-				__HAL_RCC_GPIOA_CLK_ENABLE();
-				__HAL_RCC_TIM5_CLK_ENABLE();
-				
-				GPIO = GPIOA;
-				GPIOPin = GPIO_PIN_0 | GPIO_PIN_1;
-				GPIOAlternate = GPIO_AF2_TIM5;
-				
-				timer = TIM5;
-				
-				break;
-			default:
-				iprintf("Unsupported timer index");
-			}
-		}
+	PWMCapture(const int maxTimerValue);
 	
 	void init() {
 		initPins();
@@ -56,17 +28,22 @@ public:
 		HAL_TIM_IC_Start(&htim, TIM_CHANNEL_2);
 	}
 	
+	/**
+	 * Get measured duty cycle
+	 * 
+	 * @param max Value representing 100% duty cycle
+	 */
 	int getDutyCycle(const int max) {
 		if(__HAL_TIM_GetCounter(&htim) > maxTimerValue) {
 			return 0;
 		} else {
-			uint32_t T4ch1 =  HAL_TIM_ReadCapturedValue(&htim, TIM_CHANNEL_1);
-			uint32_t T4ch2 =  HAL_TIM_ReadCapturedValue(&htim, TIM_CHANNEL_2);
-			return max * T4ch1 / T4ch2;
+			uint32_t ch1 =  HAL_TIM_ReadCapturedValue(&htim, TIM_CHANNEL_1);
+			uint32_t ch2 =  HAL_TIM_ReadCapturedValue(&htim, TIM_CHANNEL_2);
+			return max * ch1 / ch2;
 		}
 	}
 	
-private:
+private:	
 	// Enable GPIO pins for PWM capture
 	void initPins() {
 		GPIO_InitTypeDef GPIO_Init;
@@ -110,5 +87,4 @@ private:
 		sSlaveConfig.TriggerFilter = 0;
 		HAL_TIM_SlaveConfigSynchronization(&htim, &sSlaveConfig);
 	}
-	
 };
