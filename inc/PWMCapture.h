@@ -56,8 +56,7 @@ private:
 	}
 	
 	// Enable timer4 for PWM capture
-	void initTimer() {		
-		
+	void initTimer() {
 		htim.Instance = timer;
 		htim.Init.Prescaler = 0;
 		htim.Init.CounterMode = TIM_COUNTERMODE_UP;
