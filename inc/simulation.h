@@ -113,9 +113,6 @@ public:
 	 * @brief Number of punched punches
 	 */
 	uint32_t punchedPunches;
-
-private:
-	void initCommon();
 };
 
 #define US_NONE		0
@@ -129,8 +126,3 @@ private:
 #define US_SAFE_B	(1 << 7)
 #define US_HEAD_UP	(1 << 8)
 #define US_FAIL		(1 << 9)
-
-void pp_init(PunchPress * pp);
-void pp_reinit(PunchPress * pp);
-void pp_reset(PunchPress * pp);
-uint32_t pp_update(PunchPress * pp, uint32_t us_period);
