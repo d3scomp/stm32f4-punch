@@ -37,30 +37,11 @@ static inline int32_t abint32_t(int32_t x)
 	dividend = (int64_t)udividend * s1 * s2; \
 })*/
 
-#define ERS_TABLE_SAFE_ZONE 20000000 //nm /* this is zone around the punching area, exiting this zone with the center of the punching head leads to failure */
-#define ERS_TABLE_FAIL_ZONE 20000000 //nm /* this is the area around the punching area which is still displayed */
-
-#define ERS_TABLE_PUNCH_AREA_WIDTH 1500000000 /* nm */
-#define ERS_TABLE_PUNCH_AREA_HEIGHT 1000000000 /* nm */
-
-#define ERS_TABLE_FULL_WIDTH (ERS_TABLE_PUNCH_AREA_WIDTH + 2 * (ERS_TABLE_SAFE_ZONE + ERS_TABLE_FAIL_ZONE)) /* nm */
-#define ERS_TABLE_FULL_HEIGHT (ERS_TABLE_PUNCH_AREA_HEIGHT + 2 * (ERS_TABLE_SAFE_ZONE + ERS_TABLE_FAIL_ZONE)) /* nm */
-
-#define ERS_HEAD_MASS_G 2000
-#define ERS_FRICTION_KOEF 0.1
-
-
-#define ERS_PUNCH_DURATION_MS 100
-#define ERS_PUNCH_MAX_VEL_UM_S	100
-
-// The lenght in mm after which the four combinations of the encoder again repeat
-#define ERS_QENC_PERIOD_NM 1000000 // in nanometers
-
 Axis::Axis(): power(0), encoder(0), velocity_um_s(0), headPos_nm(0) {}
 
 void Axis::setEncoder() {
 	unsigned int enc;
-	enc = (unsigned int)(headPos_nm / (ERS_QENC_PERIOD_NM / 4)) % 4;
+	enc = (unsigned int)(headPos_nm / (PunchPress::ERS_QENC_PERIOD_NM / 4)) % 4;
 
 	if (enc == 2)
 		enc = 3;
@@ -79,7 +60,7 @@ uint32_t Axis::getState(int vertical, int32_t max_axis_value) {
 		result |= State::US_SAFE_L << (vertical ? 2 : 0);
 	if (head_pos > max_axis_value)
 		result |= State::US_SAFE_R << (vertical ? 2 : 0);
-	if (head_pos < -ERS_TABLE_SAFE_ZONE || head_pos > max_axis_value + ERS_TABLE_SAFE_ZONE)
+	if (head_pos < -PunchPress::ERS_TABLE_SAFE_ZONE || head_pos > max_axis_value + PunchPress::ERS_TABLE_SAFE_ZONE)
 		result |= State::US_FAIL;
 	
 	return result;
@@ -88,7 +69,7 @@ uint32_t Axis::getState(int vertical, int32_t max_axis_value) {
 uint32_t Axis::updateAxis(uint32_t us_period, int vertical, int32_t max_axis_value) {
 	int64_t head_pos_change;
 
-	int32_t friction = ERS_FRICTION_KOEF * ERS_HEAD_MASS_G;
+	int32_t friction = PunchPress::ERS_FRICTION_KOEF * PunchPress::ERS_HEAD_MASS_G;
 	int32_t vel_decreased_by_friction = (friction * us_period) / 1000;
 
 	int32_t vel = velocity_um_s;
