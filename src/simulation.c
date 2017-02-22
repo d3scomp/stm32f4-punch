@@ -59,7 +59,7 @@ static inline int32_t abint32_t(int32_t x)
 static inline void set_encoder(Axis * axis)
 {
 	unsigned int enc;
-	enc = (unsigned int)(axis->head_pos / (ERS_QENC_PERIOD_NM / 4)) % 4;
+	enc = (unsigned int)(axis->headPos_nm / (ERS_QENC_PERIOD_NM / 4)) % 4;
 
 	if (enc == 2)
 		enc = 3;
@@ -73,7 +73,7 @@ static inline uint32_t get_state(Axis * axis, int vertical, int32_t max_axis_val
 {
 	uint32_t result = axis->encoder << (vertical ? 2 : 0);
 
-	int32_t head_pos = axis->head_pos;
+	int32_t head_pos = axis->headPos_nm;
 
 	if (head_pos < 0)
 		result |= US_SAFE_L << (vertical ? 2 : 0);
@@ -91,13 +91,12 @@ static inline uint32_t update_axis(
 	int vertical,
 	int32_t max_axis_value)
 {
-	int32_t head_pos;
 	int64_t head_pos_change;
 
 	int32_t friction = ERS_FRICTION_KOEF * ERS_HEAD_MASS_G;
 	int32_t vel_decreased_by_friction = (friction * us_period) / 1000;
 
-	int32_t vel = axis->velocity;
+	int32_t vel = axis->velocity_um_s;
 	int64_t vel_change;
 	int64_t motor_force = (axis->power * 2500 - vel) * 5; // division by 80 is ok, 400 / 80 = 5, 1000000 / 80 = 12500
 	int64_t random_force_factor = motor_force * (xorshift_rand() % 1000);
@@ -125,12 +124,11 @@ static inline uint32_t update_axis(
 		}
 	}
 
-	axis->velocity = vel;
+	axis->velocity_um_s = vel;
 	
 	head_pos_change = (int64_t)vel * (int64_t)us_period;
 	signed_do_div(head_pos_change, 1000); // divide head_pos_change by 1000 -> (int32_t)((int64_t)vel * (int64_t)us_period / 1000)
-	axis->head_pos += (int32_t)head_pos_change;
-	head_pos = axis->head_pos;
+	axis->headPos_nm += (int32_t)head_pos_change;
 
 	set_encoder(axis);
 
@@ -141,23 +139,23 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 	uint32_t retval;
 
 	if (!pp->failed) {
-		retval = update_axis(&pp->x_axis, us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
-		retval |= update_axis(&pp->y_axis, us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+		retval = update_axis(&pp->x, us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
+		retval |= update_axis(&pp->y, us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 		
 		if (retval & US_FAIL) {
 			pp->failed = 1;
 		}
 	
 		if (pp->punch) {
-			if (pp->remaining_punch_time > 0 || abint32_t(pp->x_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S) {
+			if (pp->remainingPunchTime_ns > 0 || abint32_t(pp->x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
 				pp->failed = 1;
 				retval |= US_FAIL;
 				return retval;
 			}
 
-			pp->last_punch.x_pos = pp->x_axis.head_pos;
-			pp->last_punch.y_pos = pp->y_axis.head_pos;
-			pp->remaining_punch_time = ERS_PUNCH_DURATION_MS * 1000;
+			pp->lastPunch.x_pos = pp->x.headPos_nm;
+			pp->lastPunch.y_pos = pp->y.headPos_nm;
+			pp->remainingPunchTime_ns = ERS_PUNCH_DURATION_MS * 1000;
 
 //			mb(); // decrease the number of punches only after the punch has started
 #warning mb() omitted !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -165,20 +163,20 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 			pp->punch = 0;
 
 		} else {
-			if (pp->remaining_punch_time > 0) {
-				pp->remaining_punch_time -= us_period;
+			if (pp->remainingPunchTime_ns > 0) {
+				pp->remainingPunchTime_ns -= us_period;
 
-				if (abint32_t(pp->x_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y_axis.velocity) > ERS_PUNCH_MAX_VEL_UM_S) {
+				if (abint32_t(pp->x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
 					pp->failed = 1;
 					retval |= US_FAIL;
 					return retval;
 				}
 
-				if (pp->remaining_punch_time <= 0)
+				if (pp->remainingPunchTime_ns <= 0)
 				{
 					retval |= US_HEAD_UP;
-					pp->remaining_punch_time = 0;
-					++pp->punched_punches;
+					pp->remainingPunchTime_ns = 0;
+					++pp->punchedPunches;
 				}
 			} else {
 				retval |= US_HEAD_UP;
@@ -186,10 +184,10 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 		}
 
 	} else {
-		retval = get_state(&pp->x_axis, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
-		retval |= get_state(&pp->y_axis, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+		retval = get_state(&pp->x, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
+		retval |= get_state(&pp->y, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 
-		if (pp->remaining_punch_time == 0) {
+		if (pp->remainingPunchTime_ns == 0) {
 			retval |= US_HEAD_UP;
 		}
 
@@ -199,47 +197,33 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 	return retval;
 }
 
-static char pp_get_random_char(void)
-{
-	uint32_t r = xorshift_rand();
-	switch ((r >> 7) & 0x3)
-	{
-		case 1:
-			return (char)('0' + r % ('9' - '0' + 1));
-		case 2:
-			return (char)('a' + r % ('z' - 'a' + 1));
-	}
-
-	return (char)('A' + r % ('Z' - 'A' + 1));
-}
-
 static void pp_init_common(PunchPress * pp)
 {
-	set_encoder(&pp->x_axis);
-	set_encoder(&pp->y_axis);
+	set_encoder(&pp->x);
+	set_encoder(&pp->y);
 }
 
 void pp_reinit(PunchPress * pp)
 {
-	int32_t x_init_pos = pp->x_init_pos;
-	int32_t y_init_pos = pp->y_init_pos;
-	int use_init_pos = pp->use_init_pos;
+	int32_t x_init_pos = pp->initPosX;
+	int32_t y_init_pos = pp->initPosY;
+	int use_init_pos = pp->useInitPosition;
 
 	memset(pp, 0, sizeof(*pp));
 
-	pp->x_init_pos = x_init_pos;
-	pp->y_init_pos = y_init_pos;
-	pp->use_init_pos = use_init_pos;
+	pp->initPosX = x_init_pos;
+	pp->initPosY = y_init_pos;
+	pp->useInitPosition = use_init_pos;
 
 	if (use_init_pos)
 	{
-		pp->x_axis.head_pos = pp->x_init_pos;
-		pp->y_axis.head_pos = pp->y_init_pos;
+		pp->x.headPos_nm = pp->initPosX;
+		pp->y.headPos_nm = pp->initPosY;
 	}
 	else
 	{
-		pp->x_axis.head_pos = xorshift_rand() % ERS_TABLE_PUNCH_AREA_WIDTH;
-		pp->y_axis.head_pos = xorshift_rand() % ERS_TABLE_PUNCH_AREA_HEIGHT;
+		pp->x.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_WIDTH;
+		pp->y.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_HEIGHT;
 	}
 
 	pp_init_common(pp);

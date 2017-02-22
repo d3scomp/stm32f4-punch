@@ -25,32 +25,86 @@ struct Punch {
 	int32_t y_pos;
 };
 
+/**
+ * @brief Axis
+ *
+ * This holds one axis settings and state.
+ */
 class Axis {
 public:
-	int8_t power; // -128 .. 127 speed
-	uint8_t encoder; // quadratic encoder
-	int32_t velocity; // head velocity on the axis um/s
-	int32_t head_pos; // head position on the axis (nanometers)
+	static const int8_t MAX_POWER = 127;
+	static const int8_t MIN_POWER = -128;
+
+	/**
+	 * @brief Current power
+	 *
+	 * @see MAX_POWER
+	 * @see MIN_POWER
+	 */
+	int8_t power;
+
+	/**
+	 * @brief Quadratic encoder state
+	 *
+	 * First 2 bits valid ???
+	 */
+	uint8_t encoder;
+
+	/**
+	 * @brief Head velocity on the axis
+	 *
+	 * In um/s.
+	 */
+	int32_t velocity_um_s;
+
+	/**
+	 * @brief Head position
+	 *
+	 * In nanometers
+	 */
+	int32_t headPos_nm;
 };
 
-#define SESSION_ID_LENGTH	10
-
+/**
+ * @brief The main PunchPress class
+ *
+ * This holds punch press state and configuration
+ */
 class PunchPress {
 public:
-	int use_init_pos;
-	int32_t x_init_pos;
-	int32_t y_init_pos;
+	int useInitPosition;
+	int32_t initPosX;
+	int32_t initPosY;
 
-	Axis x_axis;
-	Axis y_axis;
+	Axis x;
+	Axis y;
 
-	uint8_t irq_enabled; // 1 means that interrupts are delivered
-	uint8_t failed; // 1 means that we are in FAIL state
-	uint8_t punch; // 1 means that punch was requested	
+	/**
+	 * @brief Whenever interrupts are delivered
+	 */
+	bool irqEnabled;
 
-	int32_t remaining_punch_time; // time remaining to complete the current punch (ns)
-	Punch last_punch;
-	uint32_t punched_punches; // number of punched punches
+	/**
+	 * @brief Whenever we are in failed state
+	 */
+	bool failed;
+
+	/**
+	 * @brief Whenever punch was requested
+	 */
+	bool punch;
+
+	/**
+	 * @brief Time remaining to complete the current punch (ns)
+	 */
+	int32_t remainingPunchTime_ns;
+
+	Punch lastPunch;
+
+	/**
+	 * @brief Number of punched punches
+	 */
+	uint32_t punchedPunches;
 };
 
 #define US_NONE		0

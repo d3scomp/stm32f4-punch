@@ -1,3 +1,10 @@
 *.o
 *.d
 *.elf
+
+punchpresssim.config
+punchpresssim.creator
+punchpresssim.creator.user
+punchpresssim.files
+punchpresssim.includes
+
