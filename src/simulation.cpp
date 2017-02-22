@@ -56,6 +56,8 @@ static inline int32_t abint32_t(int32_t x)
 // The lenght in mm after which the four combinations of the encoder again repeat
 #define ERS_QENC_PERIOD_NM 1000000 // in nanometers
 
+Axis::Axis(): power(0), encoder(0), velocity_um_s(0), headPos_nm(0) {}
+
 void Axis::setEncoder() {
 	unsigned int enc;
 	enc = (unsigned int)(headPos_nm / (ERS_QENC_PERIOD_NM / 4)) % 4;
@@ -128,48 +130,50 @@ uint32_t Axis::updateAxis(uint32_t us_period, int vertical, int32_t max_axis_val
 	return getState(vertical, max_axis_value);
 }
 
-uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
+PunchPress::PunchPress(): useInitPosition(false), initPosX(0), initPosY(0) {}
+
+uint32_t PunchPress::update(uint32_t us_period) {
 	uint32_t retval;
 
-	if (!pp->failed) {
-		retval = pp->x.updateAxis(us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
-		retval |= pp->y.updateAxis(us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+	if (!failed) {
+		retval = x.updateAxis(us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
+		retval |= y.updateAxis(us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 		
 		if (retval & US_FAIL) {
-			pp->failed = 1;
+			failed = 1;
 		}
 	
-		if (pp->punch) {
-			if (pp->remainingPunchTime_ns > 0 || abint32_t(pp->x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
-				pp->failed = 1;
+		if (punch) {
+			if (remainingPunchTime_ns > 0 || abint32_t(x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
+				failed = 1;
 				retval |= US_FAIL;
 				return retval;
 			}
 
-			pp->lastPunch.x_pos = pp->x.headPos_nm;
-			pp->lastPunch.y_pos = pp->y.headPos_nm;
-			pp->remainingPunchTime_ns = ERS_PUNCH_DURATION_MS * 1000;
+			lastPunch.x_pos = x.headPos_nm;
+			lastPunch.y_pos = y.headPos_nm;
+			remainingPunchTime_ns = ERS_PUNCH_DURATION_MS * 1000;
 
 //			mb(); // decrease the number of punches only after the punch has started
 #warning mb() omitted !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-			pp->punch = 0;
+			punch = 0;
 
 		} else {
-			if (pp->remainingPunchTime_ns > 0) {
-				pp->remainingPunchTime_ns -= us_period;
+			if (remainingPunchTime_ns > 0) {
+				remainingPunchTime_ns -= us_period;
 
-				if (abint32_t(pp->x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(pp->y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
-					pp->failed = 1;
+				if (abint32_t(x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
+					failed = 1;
 					retval |= US_FAIL;
 					return retval;
 				}
 
-				if (pp->remainingPunchTime_ns <= 0)
+				if (remainingPunchTime_ns <= 0)
 				{
 					retval |= US_HEAD_UP;
-					pp->remainingPunchTime_ns = 0;
-					++pp->punchedPunches;
+					remainingPunchTime_ns = 0;
+					++punchedPunches;
 				}
 			} else {
 				retval |= US_HEAD_UP;
@@ -177,10 +181,10 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 		}
 
 	} else {
-		retval = pp->x.getState(0, ERS_TABLE_PUNCH_AREA_WIDTH);
-		retval |= pp->x.getState(1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+		retval = x.getState(0, ERS_TABLE_PUNCH_AREA_WIDTH);
+		retval |= x.getState(1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 
-		if (pp->remainingPunchTime_ns == 0) {
+		if (remainingPunchTime_ns == 0) {
 			retval |= US_HEAD_UP;
 		}
 
@@ -190,46 +194,30 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 	return retval;
 }
 
-static void pp_init_common(PunchPress * pp) {
-	pp->x.setEncoder();
-	pp->y.setEncoder();
+void PunchPress::initCommon() {
+	x.setEncoder();
+	y.setEncoder();
 }
 
-void pp_reinit(PunchPress * pp)
-{
-	int32_t x_init_pos = pp->initPosX;
-	int32_t y_init_pos = pp->initPosY;
-	int use_init_pos = pp->useInitPosition;
-
-	memset(pp, 0, sizeof(*pp));
-
-	pp->initPosX = x_init_pos;
-	pp->initPosY = y_init_pos;
-	pp->useInitPosition = use_init_pos;
-
-	if (use_init_pos)
-	{
-		pp->x.headPos_nm = pp->initPosX;
-		pp->y.headPos_nm = pp->initPosY;
-	}
-	else
-	{
-		pp->x.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_WIDTH;
-		pp->y.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_HEIGHT;
+void PunchPress::reinit() {
+	if (useInitPosition) {
+		x.headPos_nm = initPosX;
+		y.headPos_nm = initPosY;
+	} else {
+		x.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_WIDTH;
+		y.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_HEIGHT;
 	}
 
-	pp_init_common(pp);
+	initCommon();
 }
 
-void pp_init(PunchPress * pp)
-{
+void PunchPress::init() {
 	xorshift_srand();
-	pp_reinit(pp);
+	reinit();
 }
 
-void pp_reset(PunchPress * pp)
-{
-	memset(pp, 0, sizeof(*pp));
-	pp_init_common(pp);
+void PunchPress::reset() {
+	memset(this, 0, sizeof(*this));
+	initCommon();
 }
 

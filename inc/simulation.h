@@ -32,6 +32,7 @@ struct Punch {
  */
 class Axis {
 public:
+	Axis();
 	static const int8_t MAX_POWER = 127;
 	static const int8_t MIN_POWER = -128;
 
@@ -78,7 +79,13 @@ public:
  */
 class PunchPress {
 public:
-	int useInitPosition;
+	PunchPress();
+	uint32_t update(uint32_t us_period);
+	void reinit();
+	void init();
+	void reset();
+
+	bool useInitPosition;
 	int32_t initPosX;
 	int32_t initPosY;
 
@@ -111,6 +118,9 @@ public:
 	 * @brief Number of punched punches
 	 */
 	uint32_t punchedPunches;
+
+private:
+	void initCommon();
 };
 
 #define US_NONE		0

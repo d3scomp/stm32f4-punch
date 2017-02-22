@@ -192,19 +192,13 @@ int main(void) {
 	
 	// Initialize punch press simulation
 	PunchPress pp;
-	
-	std::memset(&pp, 0, sizeof(PunchPress));
 
-	
-	pp.useInitPosition = 1;
+	pp.useInitPosition = true;
 	pp.initPosX = 100000000;
 	pp.initPosY = 100000000;
 	
-	pp_init(&pp);
-		
-	/*pp.x_axis.power = 32;
-	pp.y_axis.power = 45;*/
-	
+	pp.init();
+
 	uint32_t tim2last = getTimerCounter();
 	
 	// Infinite loop
@@ -225,7 +219,7 @@ int main(void) {
 		
 		// Make simulation step
 		uint32_t tim2new = getTimerCounter();
-		uint32_t state = pp_update(&pp, (tim2new - tim2last) / TIM2_TICK_PER_US);
+		uint32_t state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
 		iprintf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state & US_SAFE_L)?"1":"0", (state & US_SAFE_T)?"1":"0");
 		//iprintf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
