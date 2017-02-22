@@ -56,24 +56,22 @@ static inline int32_t abint32_t(int32_t x)
 // The lenght in mm after which the four combinations of the encoder again repeat
 #define ERS_QENC_PERIOD_NM 1000000 // in nanometers
 
-static inline void set_encoder(Axis * axis)
-{
+void Axis::setEncoder() {
 	unsigned int enc;
-	enc = (unsigned int)(axis->headPos_nm / (ERS_QENC_PERIOD_NM / 4)) % 4;
+	enc = (unsigned int)(headPos_nm / (ERS_QENC_PERIOD_NM / 4)) % 4;
 
 	if (enc == 2)
 		enc = 3;
 	else if (enc == 3)
 		enc = 2;
 
-	axis->encoder = enc;
+	encoder = enc;
 }
 
-static inline uint32_t get_state(Axis * axis, int vertical, int32_t max_axis_value)
-{
-	uint32_t result = axis->encoder << (vertical ? 2 : 0);
+uint32_t Axis::getState(int vertical, int32_t max_axis_value) {
+	uint32_t result = encoder << (vertical ? 2 : 0);
 
-	int32_t head_pos = axis->headPos_nm;
+	int32_t head_pos = headPos_nm;
 
 	if (head_pos < 0)
 		result |= US_SAFE_L << (vertical ? 2 : 0);
@@ -85,20 +83,15 @@ static inline uint32_t get_state(Axis * axis, int vertical, int32_t max_axis_val
 	return result;
 }
 
-static inline uint32_t update_axis(
-	Axis * axis,
-	uint32_t us_period,
-	int vertical,
-	int32_t max_axis_value)
-{
+uint32_t Axis::updateAxis(uint32_t us_period, int vertical, int32_t max_axis_value) {
 	int64_t head_pos_change;
 
 	int32_t friction = ERS_FRICTION_KOEF * ERS_HEAD_MASS_G;
 	int32_t vel_decreased_by_friction = (friction * us_period) / 1000;
 
-	int32_t vel = axis->velocity_um_s;
+	int32_t vel = velocity_um_s;
 	int64_t vel_change;
-	int64_t motor_force = (axis->power * 2500 - vel) * 5; // division by 80 is ok, 400 / 80 = 5, 1000000 / 80 = 12500
+	int64_t motor_force = (power * 2500 - vel) * 5; // division by 80 is ok, 400 / 80 = 5, 1000000 / 80 = 12500
 	int64_t random_force_factor = motor_force * (xorshift_rand() % 1000);
 
 	signed_do_div(random_force_factor, 100000); // divide random_force_factor by 100000 -> (motor_force * (xorshift_rand() % 1000)) / 100000
@@ -124,23 +117,23 @@ static inline uint32_t update_axis(
 		}
 	}
 
-	axis->velocity_um_s = vel;
+	velocity_um_s = vel;
 	
 	head_pos_change = (int64_t)vel * (int64_t)us_period;
 	signed_do_div(head_pos_change, 1000); // divide head_pos_change by 1000 -> (int32_t)((int64_t)vel * (int64_t)us_period / 1000)
-	axis->headPos_nm += (int32_t)head_pos_change;
+	headPos_nm += (int32_t)head_pos_change;
 
-	set_encoder(axis);
+	setEncoder();
 
-	return get_state(axis, vertical, max_axis_value);
+	return getState(vertical, max_axis_value);
 }
 
 uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 	uint32_t retval;
 
 	if (!pp->failed) {
-		retval = update_axis(&pp->x, us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
-		retval |= update_axis(&pp->y, us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+		retval = pp->x.updateAxis(us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
+		retval |= pp->y.updateAxis(us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 		
 		if (retval & US_FAIL) {
 			pp->failed = 1;
@@ -184,8 +177,8 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 		}
 
 	} else {
-		retval = get_state(&pp->x, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
-		retval |= get_state(&pp->y, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+		retval = pp->x.getState(0, ERS_TABLE_PUNCH_AREA_WIDTH);
+		retval |= pp->x.getState(1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 
 		if (pp->remainingPunchTime_ns == 0) {
 			retval |= US_HEAD_UP;
@@ -197,10 +190,9 @@ uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 	return retval;
 }
 
-static void pp_init_common(PunchPress * pp)
-{
-	set_encoder(&pp->x);
-	set_encoder(&pp->y);
+static void pp_init_common(PunchPress * pp) {
+	pp->x.setEncoder();
+	pp->y.setEncoder();
 }
 
 void pp_reinit(PunchPress * pp)

@@ -35,6 +35,12 @@ public:
 	static const int8_t MAX_POWER = 127;
 	static const int8_t MIN_POWER = -128;
 
+	void setEncoder();
+
+	uint32_t getState(int vertical, int32_t max_axis_value);
+
+	uint32_t updateAxis(uint32_t us_period, int vertical, int32_t max_axis_value);
+
 	/**
 	 * @brief Current power
 	 *
