@@ -73,6 +73,46 @@ public:
 };
 
 /**
+ * @brief PunchPress state
+ */
+class State {
+private:
+	typedef uint32_t TYPE;
+
+public:
+	static const TYPE US_NONE = 0;
+	static const TYPE  US_ENC_X0	= (1 << 0);
+	static const TYPE  US_ENC_X1	= (1 << 1);
+	static const TYPE  US_ENC_Y0	= (1 << 2);
+	static const TYPE  US_ENC_Y1	= (1 << 3);
+	static const TYPE  US_SAFE_L	= (1 << 4);
+	static const TYPE  US_SAFE_R	= (1 << 5);
+	static const TYPE  US_SAFE_T	= (1 << 6);
+	static const TYPE  US_SAFE_B	= (1 << 7);
+	static const TYPE  US_HEAD_UP = (1 << 8);
+	static const TYPE  US_FAIL = (1 << 9);
+
+	State(TYPE state);
+
+	bool getEncXA();
+	bool getEncXB();
+	bool getEncYA();
+	bool getEncYB();
+
+	bool getSafeLeft();
+	bool getSafeRight();
+	bool getSafeTop();
+	bool getSafeBottom();
+
+	bool getHeadUp();
+
+	bool getFail();
+
+private:
+	TYPE state;
+};
+
+/**
  * @brief The main PunchPress class
  *
  * This holds punch press state and configuration
@@ -81,7 +121,7 @@ class PunchPress {
 public:
 	PunchPress();
 
-	uint32_t update(uint32_t us_period);
+	State update(uint32_t us_period);
 	void setPos(int32_t x_nm, int32_t y_nm);
 
 	Axis x;
@@ -93,7 +133,7 @@ public:
 	bool irqEnabled;
 
 	/**
-	 * @brief Whenever we are in failed state
+	 * @brief Whenever we are in failed state`
 	 */
 	bool failed;
 
@@ -115,14 +155,4 @@ public:
 	uint32_t punchedPunches;
 };
 
-#define US_NONE		0
-#define US_ENC_X0	(1 << 0)
-#define US_ENC_X1	(1 << 1)
-#define US_ENC_Y0	(1 << 2)
-#define US_ENC_Y1	(1 << 3)
-#define US_SAFE_L	(1 << 4)
-#define US_SAFE_R	(1 << 5)
-#define US_SAFE_T	(1 << 6)
-#define US_SAFE_B	(1 << 7)
-#define US_HEAD_UP	(1 << 8)
-#define US_FAIL		(1 << 9)
+

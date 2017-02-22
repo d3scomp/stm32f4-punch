@@ -76,11 +76,11 @@ uint32_t Axis::getState(int vertical, int32_t max_axis_value) {
 	int32_t head_pos = headPos_nm;
 
 	if (head_pos < 0)
-		result |= US_SAFE_L << (vertical ? 2 : 0);
+		result |= State::US_SAFE_L << (vertical ? 2 : 0);
 	if (head_pos > max_axis_value)
-		result |= US_SAFE_R << (vertical ? 2 : 0);
+		result |= State::US_SAFE_R << (vertical ? 2 : 0);
 	if (head_pos < -ERS_TABLE_SAFE_ZONE || head_pos > max_axis_value + ERS_TABLE_SAFE_ZONE)
-		result |= US_FAIL;
+		result |= State::US_FAIL;
 	
 	return result;
 }
@@ -146,21 +146,21 @@ void PunchPress::setPos(int32_t x_nm, int32_t y_nm) {
 	y.headPos_nm = y_nm;
 }
 
-uint32_t PunchPress::update(uint32_t us_period) {
+State PunchPress::update(uint32_t us_period) {
 	uint32_t retval;
 
 	if (!failed) {
 		retval = x.updateAxis(us_period, 0, ERS_TABLE_PUNCH_AREA_WIDTH);
 		retval |= y.updateAxis(us_period, 1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 		
-		if (retval & US_FAIL) {
+		if (retval & State::US_FAIL) {
 			failed = 1;
 		}
 	
 		if (punch) {
 			if (remainingPunchTime_ns > 0 || abint32_t(x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
 				failed = 1;
-				retval |= US_FAIL;
+				retval |= State::US_FAIL;
 				return retval;
 			}
 
@@ -179,18 +179,18 @@ uint32_t PunchPress::update(uint32_t us_period) {
 
 				if (abint32_t(x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
 					failed = 1;
-					retval |= US_FAIL;
+					retval |= State::US_FAIL;
 					return retval;
 				}
 
 				if (remainingPunchTime_ns <= 0)
 				{
-					retval |= US_HEAD_UP;
+					retval |= State::US_HEAD_UP;
 					remainingPunchTime_ns = 0;
 					++punchedPunches;
 				}
 			} else {
-				retval |= US_HEAD_UP;
+				retval |= State::US_HEAD_UP;
 			}
 		}
 
@@ -199,11 +199,53 @@ uint32_t PunchPress::update(uint32_t us_period) {
 		retval |= y.getState(1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 
 		if (remainingPunchTime_ns == 0) {
-			retval |= US_HEAD_UP;
+			retval |= State::US_HEAD_UP;
 		}
 
-		retval |= US_FAIL;
+		retval |= State::US_FAIL;
 	}
 
-	return retval;
+	return State(retval);
+}
+
+State::State(TYPE state): state(state) {}
+
+bool State::getEncXA() {
+	return state & US_ENC_X0;
+}
+
+bool State::getEncXB() {
+	return state & US_ENC_X1;
+}
+
+bool State::getEncYA() {
+	return state & US_ENC_Y0;
+}
+
+bool State::getEncYB() {
+	return state & US_ENC_Y1;
+}
+
+bool State::getSafeLeft() {
+	return state & US_SAFE_L;
+}
+
+bool State::getSafeRight() {
+	return state & US_SAFE_R;
+}
+
+bool State::getSafeTop() {
+	return state & US_SAFE_T;
+}
+
+bool State::getSafeBottom() {
+	return state & US_SAFE_B;
+}
+
+bool State::getHeadUp() {
+	return state & US_HEAD_UP;
+}
+
+bool State::getFail() {
+	return state & US_FAIL;
 }

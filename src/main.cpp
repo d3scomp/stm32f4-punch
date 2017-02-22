@@ -215,25 +215,25 @@ int main(void) {
 		
 		// Make simulation step
 		uint32_t tim2new = getTimerCounter();
-		uint32_t state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
+		State state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		iprintf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state & US_SAFE_L)?"1":"0", (state & US_SAFE_T)?"1":"0");
+		iprintf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state.getSafeLeft())?"1":"0", (state.getSafeTop())?"1":"0");
 		//iprintf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
 		// Get output from simulation
-		writeEncoders(state & US_ENC_X0,
-			state & US_ENC_X1,
-			state & US_ENC_Y0,
-			state & US_ENC_Y1);
+		writeEncoders(state.getEncXA(),
+			state.getEncXB(),
+			state.getEncYA(),
+			state.getEncYB());
 		
-		writeSafeZone(state & US_SAFE_L,
-			state & US_SAFE_R,
-			state & US_SAFE_T,
-			state & US_SAFE_B);
+		writeSafeZone(state.getSafeLeft(),
+			state.getSafeRight(),
+			state.getSafeTop(),
+			state.getSafeBottom());
 		
-		writeHeadUp(state & US_HEAD_UP);
+		writeHeadUp(state.getHeadUp());
 		
-		writeFail(state & US_FAIL);
+		writeFail(state.getFail());
 		
 		// Signal simulation step (used to analyze simulator performance)
 		leds.toggleGreen();
