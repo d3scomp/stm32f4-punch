@@ -193,12 +193,8 @@ int main(void) {
 	// Initialize punch press simulation
 	PunchPress pp;
 
-	pp.useInitPosition = true;
-	pp.initPosX = 100000000;
-	pp.initPosY = 100000000;
+	pp.setPos(100000000, 100000000);
 	
-	pp.init();
-
 	uint32_t tim2last = getTimerCounter();
 	
 	// Infinite loop

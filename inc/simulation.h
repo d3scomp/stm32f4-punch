@@ -80,14 +80,9 @@ public:
 class PunchPress {
 public:
 	PunchPress();
-	uint32_t update(uint32_t us_period);
-	void reinit();
-	void init();
-	void reset();
 
-	bool useInitPosition;
-	int32_t initPosX;
-	int32_t initPosY;
+	uint32_t update(uint32_t us_period);
+	void setPos(int32_t x_nm, int32_t y_nm);
 
 	Axis x;
 	Axis y;

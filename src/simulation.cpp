@@ -130,7 +130,21 @@ uint32_t Axis::updateAxis(uint32_t us_period, int vertical, int32_t max_axis_val
 	return getState(vertical, max_axis_value);
 }
 
-PunchPress::PunchPress(): useInitPosition(false), initPosX(0), initPosY(0) {}
+PunchPress::PunchPress():
+	irqEnabled(false), failed(false), punch(false), remainingPunchTime_ns(0), punchedPunches(0) {
+	x.setEncoder();
+	y.setEncoder();
+
+	x.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_WIDTH;
+	y.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_HEIGHT;
+
+	xorshift_srand();
+}
+
+void PunchPress::setPos(int32_t x_nm, int32_t y_nm) {
+	x.headPos_nm = x_nm;
+	y.headPos_nm = y_nm;
+}
 
 uint32_t PunchPress::update(uint32_t us_period) {
 	uint32_t retval;
@@ -182,7 +196,7 @@ uint32_t PunchPress::update(uint32_t us_period) {
 
 	} else {
 		retval = x.getState(0, ERS_TABLE_PUNCH_AREA_WIDTH);
-		retval |= x.getState(1, ERS_TABLE_PUNCH_AREA_HEIGHT);
+		retval |= y.getState(1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 
 		if (remainingPunchTime_ns == 0) {
 			retval |= US_HEAD_UP;
@@ -193,31 +207,3 @@ uint32_t PunchPress::update(uint32_t us_period) {
 
 	return retval;
 }
-
-void PunchPress::initCommon() {
-	x.setEncoder();
-	y.setEncoder();
-}
-
-void PunchPress::reinit() {
-	if (useInitPosition) {
-		x.headPos_nm = initPosX;
-		y.headPos_nm = initPosY;
-	} else {
-		x.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_WIDTH;
-		y.headPos_nm = xorshift_rand() % ERS_TABLE_PUNCH_AREA_HEIGHT;
-	}
-
-	initCommon();
-}
-
-void PunchPress::init() {
-	xorshift_srand();
-	reinit();
-}
-
-void PunchPress::reset() {
-	memset(this, 0, sizeof(*this));
-	initCommon();
-}
-
