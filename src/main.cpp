@@ -191,15 +191,17 @@ int main(void) {
 	initTimeCounter();
 	
 	// Initialize punch press simulation
-	struct pp_t pp;
-	std::memset(&pp, 0, sizeof(pp_t));
+	PunchPress pp;
+	
+	std::memset(&pp, 0, sizeof(PunchPress));
+
 	
 	pp.use_init_pos = 1;
 	pp.x_init_pos = 100000000;
 	pp.y_init_pos = 100000000;
 	
 	pp_init(&pp);
-	
+		
 	/*pp.x_axis.power = 32;
 	pp.y_axis.power = 45;*/
 	

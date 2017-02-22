@@ -1,8 +1,5 @@
+#pragma once
 
-#ifndef SIMULATION_H_
-#define SIMULATION_H_
-
-//#include "types.h"
 #include <stdint.h>
 
 
@@ -23,14 +20,13 @@
 
 
 
-struct pp_punch_t
-{
+struct Punch {
 	int32_t x_pos; // x position of the punch, nm from left size of the
 	int32_t y_pos;
 };
 
-struct pp_axis_t
-{
+class Axis {
+public:
 	int8_t power; // -128 .. 127 speed
 	uint8_t encoder; // quadratic encoder
 	int32_t velocity; // head velocity on the axis um/s
@@ -39,23 +35,21 @@ struct pp_axis_t
 
 #define SESSION_ID_LENGTH	10
 
-struct pp_t
-{
-	char session_id[SESSION_ID_LENGTH + 1];
-
+class PunchPress {
+public:
 	int use_init_pos;
 	int32_t x_init_pos;
 	int32_t y_init_pos;
 
-	struct pp_axis_t x_axis;
-	struct pp_axis_t y_axis;
+	Axis x_axis;
+	Axis y_axis;
 
 	uint8_t irq_enabled; // 1 means that interrupts are delivered
 	uint8_t failed; // 1 means that we are in FAIL state
 	uint8_t punch; // 1 means that punch was requested	
 
 	int32_t remaining_punch_time; // time remaining to complete the current punch (ns)
-	struct pp_punch_t last_punch;
+	Punch last_punch;
 	uint32_t punched_punches; // number of punched punches
 };
 
@@ -71,10 +65,7 @@ struct pp_t
 #define US_HEAD_UP	(1 << 8)
 #define US_FAIL		(1 << 9)
 
-void pp_init(struct pp_t * pp);
-void pp_reinit(struct pp_t * pp);
-void pp_reset(struct pp_t * pp);
-uint32_t pp_update(struct pp_t * pp, uint32_t us_period);
-
-#endif
-
+void pp_init(PunchPress * pp);
+void pp_reinit(PunchPress * pp);
+void pp_reset(PunchPress * pp);
+uint32_t pp_update(PunchPress * pp, uint32_t us_period);

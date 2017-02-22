@@ -56,7 +56,7 @@ static inline int32_t abint32_t(int32_t x)
 // The lenght in mm after which the four combinations of the encoder again repeat
 #define ERS_QENC_PERIOD_NM 1000000 // in nanometers
 
-static inline void set_encoder(struct pp_axis_t * axis)
+static inline void set_encoder(Axis * axis)
 {
 	unsigned int enc;
 	enc = (unsigned int)(axis->head_pos / (ERS_QENC_PERIOD_NM / 4)) % 4;
@@ -69,7 +69,7 @@ static inline void set_encoder(struct pp_axis_t * axis)
 	axis->encoder = enc;
 }
 
-static inline uint32_t get_state(struct pp_axis_t * axis, int vertical, int32_t max_axis_value)
+static inline uint32_t get_state(Axis * axis, int vertical, int32_t max_axis_value)
 {
 	uint32_t result = axis->encoder << (vertical ? 2 : 0);
 
@@ -86,7 +86,7 @@ static inline uint32_t get_state(struct pp_axis_t * axis, int vertical, int32_t 
 }
 
 static inline uint32_t update_axis(
-	struct pp_axis_t * axis,
+	Axis * axis,
 	uint32_t us_period,
 	int vertical,
 	int32_t max_axis_value)
@@ -137,7 +137,7 @@ static inline uint32_t update_axis(
 	return get_state(axis, vertical, max_axis_value);
 }
 
-uint32_t pp_update(struct pp_t * pp, uint32_t us_period) {
+uint32_t pp_update(PunchPress * pp, uint32_t us_period) {
 	uint32_t retval;
 
 	if (!pp->failed) {
@@ -213,22 +213,13 @@ static char pp_get_random_char(void)
 	return (char)('A' + r % ('Z' - 'A' + 1));
 }
 
-static void pp_init_common(struct pp_t * pp)
+static void pp_init_common(PunchPress * pp)
 {
-	int i;
-
 	set_encoder(&pp->x_axis);
 	set_encoder(&pp->y_axis);
-
-	for (i = 0; i < SESSION_ID_LENGTH; ++i)
-	{
-		pp->session_id[i] = pp_get_random_char();
-	}
-
-	pp->session_id[SESSION_ID_LENGTH] = '\0';
 }
 
-void pp_reinit(struct pp_t * pp)
+void pp_reinit(PunchPress * pp)
 {
 	int32_t x_init_pos = pp->x_init_pos;
 	int32_t y_init_pos = pp->y_init_pos;
@@ -254,13 +245,13 @@ void pp_reinit(struct pp_t * pp)
 	pp_init_common(pp);
 }
 
-void pp_init(struct pp_t * pp)
+void pp_init(PunchPress * pp)
 {
 	xorshift_srand();
 	pp_reinit(pp);
 }
 
-void pp_reset(struct pp_t * pp)
+void pp_reset(PunchPress * pp)
 {
 	memset(pp, 0, sizeof(*pp));
 	pp_init_common(pp);
