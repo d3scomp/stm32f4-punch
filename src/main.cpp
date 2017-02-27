@@ -95,17 +95,17 @@ void initPunchOutput() {
 }
 
 void writeEncoders(bool xA, bool xB, bool yA, bool yB) {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, xA?GPIO_PIN_SET:GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, xB?GPIO_PIN_SET:GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, yA?GPIO_PIN_SET:GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, yB?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, xA ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, xB ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, yA ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, yB ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 void writeSafeZone(bool left, bool right, bool top, bool bottom) {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7, left?GPIO_PIN_SET:GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, right?GPIO_PIN_SET:GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, top?GPIO_PIN_SET:GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, bottom?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7, left ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, right ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, top ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, bottom ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 void writeHeadUp(bool headUp) {
@@ -145,6 +145,7 @@ uint32_t getTimerCounter() {
 const int X_AXIS_TIMER = 4;
 const int Y_AXIS_TIMER = 5;
 const int MAX_PWM_CAPTURE_TIMER_VALUE = 168;
+const int MOTOR_MAX_POWER = 128;
 
 int main(void) {
 	/* STM32F4xx HAL library initialization:
@@ -200,8 +201,8 @@ int main(void) {
 	// Infinite loop
 	while (1) {
 		// Obtain motor power
-		const uint8_t xDuty = pwmCaptureX.getDutyCycle(128);
-		const uint8_t yDuty = pwmCaptureY.getDutyCycle(128);
+		const uint8_t xDuty = pwmCaptureX.getDutyCycle(MOTOR_MAX_POWER);
+		const uint8_t yDuty = pwmCaptureY.getDutyCycle(MOTOR_MAX_POWER);
 		const bool xDir = readMotorXDirection();
 		const bool yDir = readMotorYDirection();
 		const int8_t xPower = xDir?xDuty:-(128-xDuty);
