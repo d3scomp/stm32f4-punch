@@ -21,8 +21,8 @@
 
 
 struct Punch {
-	int32_t x_pos; // x position of the punch, nm from left size of the
-	int32_t y_pos;
+	int32_t xPos; // x position of the punch, nm from left size of the
+	int32_t yPos;
 };
 
 /**
@@ -81,14 +81,14 @@ private:
 
 public:
 	static const TYPE US_NONE = 0;
-	static const TYPE  US_ENC_X0	= (1 << 0);
-	static const TYPE  US_ENC_X1	= (1 << 1);
-	static const TYPE  US_ENC_Y0	= (1 << 2);
-	static const TYPE  US_ENC_Y1	= (1 << 3);
-	static const TYPE  US_SAFE_L	= (1 << 4);
-	static const TYPE  US_SAFE_R	= (1 << 5);
-	static const TYPE  US_SAFE_T	= (1 << 6);
-	static const TYPE  US_SAFE_B	= (1 << 7);
+	static const TYPE  US_ENC_X0 = (1 << 0);
+	static const TYPE  US_ENC_X1 = (1 << 1);
+	static const TYPE  US_ENC_Y0 = (1 << 2);
+	static const TYPE  US_ENC_Y1 = (1 << 3);
+	static const TYPE  US_SAFE_L = (1 << 4);
+	static const TYPE  US_SAFE_R = (1 << 5);
+	static const TYPE  US_SAFE_T = (1 << 6);
+	static const TYPE  US_SAFE_B = (1 << 7);
 	static const TYPE  US_HEAD_UP = (1 << 8);
 	static const TYPE  US_FAIL = (1 << 9);
 

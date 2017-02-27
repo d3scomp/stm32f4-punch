@@ -145,8 +145,8 @@ State PunchPress::update(uint32_t us_period) {
 				return retval;
 			}
 
-			lastPunch.x_pos = x.headPos_nm;
-			lastPunch.y_pos = y.headPos_nm;
+			lastPunch.xPos = x.headPos_nm;
+			lastPunch.yPos = y.headPos_nm;
 			remainingPunchTime_ns = ERS_PUNCH_DURATION_MS * 1000;
 
 //			mb(); // decrease the number of punches only after the punch has started

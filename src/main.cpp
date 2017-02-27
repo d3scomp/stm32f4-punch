@@ -218,7 +218,7 @@ int main(void) {
 		uint32_t tim2new = getTimerCounter();
 		State state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		iprintf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state.getSafeLeft())?"1":"0", (state.getSafeTop())?"1":"0");
+		iprintf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state.getSafeLeft()) ? "1" : "0", (state.getSafeTop()) ? "1" : "0");
 		//iprintf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
 		// Get output from simulation
