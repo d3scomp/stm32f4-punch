@@ -17,7 +17,7 @@ GDB=armv7m-hardfloat-eabi-gdb
 OPENOCD=openocd
 
 # Compiler and linker options
-CFLAGS = -mcpu=cortex-m4 -g -Os -Wall -pipe
+CFLAGS = -mcpu=cortex-m4 -g -Os -Wall -pipe -fno-exceptions -fomit-frame-pointer
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 CFLAGS += -MMD -MP
 CFLAGS += -D STM32F407xx

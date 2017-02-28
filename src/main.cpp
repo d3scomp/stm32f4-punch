@@ -42,7 +42,7 @@
 #include "PWMCapture.h"
 #include "UART.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <cstring>
 
 static void SystemClock_Config(void);
@@ -184,7 +184,7 @@ int main(void) {
 			case 3: leds.toggleGreen(); break;
 		}
 		
-		iprintf("Hello world: %d\r\n", cnt);
+		std::printf("Hello world: %d\r\n", cnt);
 		
 		HAL_Delay(100); // 100ms
 	}
@@ -218,8 +218,8 @@ int main(void) {
 		uint32_t tim2new = getTimerCounter();
 		State state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		iprintf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state.getSafeLeft()) ? "1" : "0", (state.getSafeTop()) ? "1" : "0");
-		//iprintf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
+		std::printf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state.getSafeLeft()) ? "1" : "0", (state.getSafeTop()) ? "1" : "0");
+		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
 		// Get output from simulation
 		writeEncoders(state.getEncXA(),
