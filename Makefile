@@ -21,7 +21,7 @@ CFLAGS = -mcpu=cortex-m4 -g -Os -Wall -pipe
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 CFLAGS += -MMD -MP
 CFLAGS += -D STM32F407xx
-CXXFLAGS = $(CFLAGS)
+CXXFLAGS = $(CFLAGS) -std=c++14
 LDFLAGS=-T STM32F407VG_FLASH.ld -specs=nosys.specs
 
 # Includes including library includes
