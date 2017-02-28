@@ -51,60 +51,53 @@ void Axis::setEncoder() {
 	encoder = enc;
 }
 
-uint32_t Axis::getState(int vertical, int32_t max_axis_value) {
+uint32_t Axis::getState(int vertical, int32_t maxAxisValue) {
 	uint32_t result = encoder << (vertical ? 2 : 0);
 
-	int32_t head_pos = headPos_nm;
+	int32_t headPos = headPos_nm;
 
-	if (head_pos < 0)
+	if (headPos < 0)
 		result |= State::US_SAFE_L << (vertical ? 2 : 0);
-	if (head_pos > max_axis_value)
+	if (headPos > maxAxisValue)
 		result |= State::US_SAFE_R << (vertical ? 2 : 0);
-	if (head_pos < -PunchPress::ERS_TABLE_SAFE_ZONE || head_pos > max_axis_value + PunchPress::ERS_TABLE_SAFE_ZONE)
+	if (headPos < -PunchPress::ERS_TABLE_SAFE_ZONE || headPos > maxAxisValue + PunchPress::ERS_TABLE_SAFE_ZONE)
 		result |= State::US_FAIL;
 	
 	return result;
 }
 
 uint32_t Axis::updateAxis(uint32_t us_period, int vertical, int32_t max_axis_value) {
-	int64_t head_pos_change;
+	const int32_t friction = PunchPress::ERS_FRICTION_KOEF * PunchPress::ERS_HEAD_MASS_G;
+	const int32_t velDecreasedByFriction = (friction * us_period) / 1000;
 
-	int32_t friction = PunchPress::ERS_FRICTION_KOEF * PunchPress::ERS_HEAD_MASS_G;
-	int32_t vel_decreased_by_friction = (friction * us_period) / 1000;
-
-	int32_t vel = velocity_um_s;
-	int64_t vel_change;
-	int64_t motor_force = (power * 2500 - vel) * 5; // division by 80 is ok, 400 / 80 = 5, 1000000 / 80 = 12500
+	int64_t motor_force = (power * 2500 - velocity_um_s) * 5; // division by 80 is ok, 400 / 80 = 5, 1000000 / 80 = 12500
 	int64_t random_force_factor = motor_force * (xorshift_rand() % 1000);
 
 	signed_do_div(random_force_factor, 100000); // divide random_force_factor by 100000 -> (motor_force * (xorshift_rand() % 1000)) / 100000
 	motor_force += random_force_factor;
 
-	vel_change = motor_force * us_period;
+	int64_t vel_change = motor_force * us_period;
 	signed_do_div(vel_change, 1000000); // divide vel_change by 1000000 -> (int32_t)((motor_force * us_period) / 1000000)
-	vel += (int32_t)vel_change;
+	velocity_um_s += (int32_t)vel_change;
 
 
-	if (abint32_t(vel) <= 1) {
-		vel = 0;
+	if (abint32_t(velocity_um_s) <= 1) {
+		velocity_um_s = 0;
 	} else {
-		int32_t vel_decr = vel_decreased_by_friction;
-		if (abint32_t(vel) <= vel_decr) {
-			vel = 0;
+		if (abint32_t(velocity_um_s) <= velDecreasedByFriction) {
+			velocity_um_s = 0;
 		} else {
-			if (vel < 0) {
-				vel += vel_decr;
+			if (velocity_um_s < 0) {
+				velocity_um_s += velDecreasedByFriction;
 			} else {
-				vel -= vel_decr;
+				velocity_um_s -= velDecreasedByFriction;
 			}
 		}
 	}
-
-	velocity_um_s = vel;
 	
-	head_pos_change = (int64_t)vel * (int64_t)us_period;
-	signed_do_div(head_pos_change, 1000); // divide head_pos_change by 1000 -> (int32_t)((int64_t)vel * (int64_t)us_period / 1000)
-	headPos_nm += (int32_t)head_pos_change;
+	int64_t headPosChange = (int64_t)velocity_um_s * (int64_t)us_period;
+	signed_do_div(headPosChange, 1000); // divide head_pos_change by 1000 -> (int32_t)((int64_t)vel * (int64_t)us_period / 1000)
+	headPos_nm += (int32_t)headPosChange;
 
 	setEncoder();
 

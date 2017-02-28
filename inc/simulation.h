@@ -150,7 +150,7 @@ public:
 	static const int32_t ERS_TABLE_FULL_HEIGHT = (ERS_TABLE_PUNCH_AREA_HEIGHT + 2 * (ERS_TABLE_SAFE_ZONE + ERS_TABLE_FAIL_ZONE));
 
 	static const int32_t ERS_HEAD_MASS_G = 2000;
-	static const float ERS_FRICTION_KOEF = 0.1;
+	static constexpr float ERS_FRICTION_KOEF = 0.1f;
 
 
 	static const int32_t ERS_PUNCH_DURATION_MS = 100;
