@@ -48,80 +48,80 @@
 static void SystemClock_Config(void);
 static void Error_Handler(void);
 
-// IN	PA0&PA1	motor X PWM - brown + jumper
-// IN	PB6&PB7	motor Y PWM - red + jumper
+// IN	PB6&PB7	motor X PWM - red + jumper
+// IN	PA0&PA1	motor Y PWM - brown + jumper
 
-// IN	PD0		motor X direction - orange
-// IN	PD1		motor Y direction - yellow
+// IN	PC0		motor X direction - orange
+// IN	PC1		motor Y direction - yellow
 
-// IN	PD2		punch control - violet
+// IN	PC2		punch control - violet
 
-// OUT	PD3		motor X encoder A - red
-// OUT	PD4		motor X encoder B - orange
-// OUT	PD5		motor Y encoder A - yellow
-// OUT	PD6		motor Y encoder B - green
+// OUT	PC3		motor X encoder A - red
+// OUT	PC4		motor X encoder B - orange
+// OUT	PC5		motor Y encoder A - yellow
+// OUT	PC6		motor Y encoder B - green
 
-// OUT 	PD7		safe zone L - blue
-// OUT 	PD8		safe zone R - red
-// OUT 	PD9		safe zone T - orange
-// OUT 	PD10	safe zone B - yellow
+// OUT 	PC7		safe zone L - blue
+// OUT 	PC8		safe zone R - red
+// OUT 	PC9		safe zone T - orange
+// OUT 	PC10	safe zone B - yellow
 
-// OUT	PD11	head up (head ready to move or punch) - green
-// OUT	PD12	FAIL - blue
+// OUT	PC11	head up (head ready to move or punch) - green
+// OUT	PC12	FAIL - blue
 
 
 void initPunchInput() {
 	// Enable input pins
-	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
 	GPIO_InitTypeDef GPIO_Init;
 	GPIO_Init.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2;
 	GPIO_Init.Mode = GPIO_MODE_INPUT;
 	GPIO_Init.Pull = GPIO_NOPULL;
 	GPIO_Init.Speed = GPIO_SPEED_HIGH;
 	GPIO_Init.Alternate = 0;
-	HAL_GPIO_Init(GPIOD, &GPIO_Init);
+	HAL_GPIO_Init(GPIOC, &GPIO_Init);
 }
 
 void initPunchOutput() {
 	// Enable input pins
-	__HAL_RCC_GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOC_CLK_ENABLE();
 	GPIO_InitTypeDef GPIO_Init;
 	GPIO_Init.Pin = GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12;
 	GPIO_Init.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_Init.Pull = GPIO_NOPULL;
 	GPIO_Init.Speed = GPIO_SPEED_HIGH;
 	GPIO_Init.Alternate = 0;
-	HAL_GPIO_Init(GPIOD, &GPIO_Init);
+	HAL_GPIO_Init(GPIOC, &GPIO_Init);
 }
 
 void writeEncoders(bool xA, bool xB, bool yA, bool yB) {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_3, xA ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_4, xB ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_5, yA ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_6, yB ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, xA ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, xB ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, yA ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, yB ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 void writeSafeZone(bool left, bool right, bool top, bool bottom) {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_7, left ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_8, right ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_9, top ? GPIO_PIN_SET : GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, bottom ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, left ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, right ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, top ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, bottom ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 void writeHeadUp(bool headUp) {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_11, headUp?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_11, headUp?GPIO_PIN_SET:GPIO_PIN_RESET);
 }
 
 void writeFail(bool fail) {
-	HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12, fail?GPIO_PIN_SET:GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_12, fail?GPIO_PIN_SET:GPIO_PIN_RESET);
 }
 
 bool readMotorXDirection() {
-	return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_0);
+	return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0);
 }
 
 bool readMotorYDirection() {
-	return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_1);
+	return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);
 }
 
 TIM_HandleTypeDef htim2;
@@ -142,8 +142,8 @@ uint32_t getTimerCounter() {
 	return __HAL_TIM_GetCounter(&htim2);
 }
 
-const int X_AXIS_TIMER = 4;
-const int Y_AXIS_TIMER = 5;
+const int X_AXIS_TIMER = 5;
+const int Y_AXIS_TIMER = 4;
 const int MAX_PWM_CAPTURE_TIMER_VALUE = 168;
 const int MOTOR_MAX_POWER = 128;
 
@@ -164,7 +164,7 @@ int main(void) {
 
 	LEDDriver leds;
 	leds.init();
-	
+
 	initUARTConsole();
 	
 	initPunchInput();
@@ -194,7 +194,10 @@ int main(void) {
 	// Initialize punch press simulation
 	PunchPress pp;
 
-	pp.setPos(100000000, 100000000);
+	pp.setPos(10000000, 10000000);
+
+	std::printf("Waiting 1s...\r\n");
+	HAL_Delay(1000);
 	
 	uint32_t tim2last = getTimerCounter();
 	
@@ -212,13 +215,23 @@ int main(void) {
 		pp.x.power = xPower;
 		pp.y.power = yPower;
 		
-		//iprintf("Power(DutyCycle): X: %03d (%03d), Y: %03d (%03d)\r\n", xPower, xDuty, yPower, yDuty);
+//		std::printf("Power(Direction, DutyCycle): X: %03d (%03d, %03d), Y: %03d (%03d, %03d)\r\n", xPower, xDir, xDuty, yPower, yDir, yDuty);
 		
 		// Make simulation step
 		uint32_t tim2new = getTimerCounter();
 		State state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		std::printf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, \r\n", pp.x.headPos_nm, pp.y.headPos_nm, state, pp.failed, (state.getSafeLeft()) ? "1" : "0", (state.getSafeTop()) ? "1" : "0");
+		std::printf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, Px: %03d, Py: %03d\r\n",
+					pp.x.headPos_nm,
+					pp.y.headPos_nm,
+					state,
+					pp.failed,
+					(state.getSafeLeft()) ? "1" : "0",
+					(state.getSafeTop()) ? "1" : "0",
+					xPower,
+					yPower
+		);
+
 		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
 		// Get output from simulation
