@@ -184,7 +184,7 @@ int main(void) {
 			case 3: leds.toggleGreen(); break;
 		}
 		
-		std::printf("Hello world: %d\r\n", cnt);
+		//std::printf("Hello world: %d\r\n", cnt);
 		
 		HAL_Delay(100); // 100ms
 	}
@@ -196,11 +196,15 @@ int main(void) {
 
 	pp.setPos(10000000, 10000000);
 
-	std::printf("Waiting 1s...\r\n");
+	//std::printf("Waiting 1s...\r\n");
 	HAL_Delay(1000);
+
+	std::printf("#R\r\n");
 	
 	uint32_t tim2last = getTimerCounter();
 	
+	bool oldHeadUp = false;
+
 	// Infinite loop
 	while (1) {
 		// Obtain motor power
@@ -221,7 +225,7 @@ int main(void) {
 		uint32_t tim2new = getTimerCounter();
 		State state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		std::printf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, Px: %03d, Py: %03d\r\n",
+		/*std::printf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, Px: %03d, Py: %03d\r\n",
 					pp.x.headPos_nm,
 					pp.y.headPos_nm,
 					state,
@@ -230,7 +234,24 @@ int main(void) {
 					(state.getSafeTop()) ? "1" : "0",
 					xPower,
 					yPower
-		);
+		);*/
+
+		if(pp.failed) {
+			std::printf("#F\r\n");
+		} else {
+			std::printf("#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
+			//std::printf("#H%ld;%ld;ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm, pp.x.velocity_um_s, pp.y.velocity_um_s);
+		}
+
+		if(state.getHeadUp() && !oldHeadUp) {
+			oldHeadUp = true;
+			std::printf("#U\r\n");
+		}
+
+		if(!state.getHeadUp() && oldHeadUp) {
+			oldHeadUp = false;
+			std::printf("#D\r\n");
+		}
 
 		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
