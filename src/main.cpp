@@ -144,8 +144,9 @@ uint32_t getTimerCounter() {
 
 const int X_AXIS_TIMER = 5;
 const int Y_AXIS_TIMER = 4;
-const int MAX_PWM_CAPTURE_TIMER_VALUE = 168;
+const int MIN_PWM_FREQ_HZ = 500;
 const int MOTOR_MAX_POWER = 128;
+const int MASTER_CLOCK = 168000000;
 
 int main(void) {
 	/* STM32F4xx HAL library initialization:
@@ -170,8 +171,8 @@ int main(void) {
 	initPunchInput();
 	initPunchOutput();
 	
-	PWMCapture<X_AXIS_TIMER> pwmCaptureX(MAX_PWM_CAPTURE_TIMER_VALUE);
-	PWMCapture<Y_AXIS_TIMER> pwmCaptureY(MAX_PWM_CAPTURE_TIMER_VALUE);
+	PWMCapture<X_AXIS_TIMER> pwmCaptureX(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
+	PWMCapture<Y_AXIS_TIMER> pwmCaptureY(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
 	pwmCaptureX.init();
 	pwmCaptureY.init();
 	
@@ -212,14 +213,14 @@ int main(void) {
 		const uint8_t yDuty = pwmCaptureY.getDutyCycle(MOTOR_MAX_POWER);
 		const bool xDir = readMotorXDirection();
 		const bool yDir = readMotorYDirection();
-		const int8_t xPower = xDir?xDuty:-(128-xDuty);
-		const int8_t yPower = yDir?yDuty:-(128-yDuty);
+		const int8_t xPower = xDir ? xDuty : -(MOTOR_MAX_POWER - xDuty);
+		const int8_t yPower = yDir ? yDuty : -(MOTOR_MAX_POWER - yDuty);
 		
 		// Pass input to simulation
 		pp.x.power = xPower;
 		pp.y.power = yPower;
 		
-//		std::printf("Power(Direction, DutyCycle): X: %03d (%03d, %03d), Y: %03d (%03d, %03d)\r\n", xPower, xDir, xDuty, yPower, yDir, yDuty);
+		//std::printf("Power(Direction, DutyCycle): X: %03d (%03d, %03d), Y: %03d (%03d, %03d)\r\n", xPower, xDir, xDuty, yPower, yDir, yDuty);
 		
 		// Make simulation step
 		uint32_t tim2new = getTimerCounter();

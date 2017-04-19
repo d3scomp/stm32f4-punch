@@ -1,8 +1,8 @@
 #include "PWMCapture.h"
 
 template<>
-PWMCapture<4>::PWMCapture(const int maxTimerValue):
-		maxTimerValue(maxTimerValue) {
+PWMCapture<4>::PWMCapture(const int MIN_PWM_FREQ_HZ, const int MASTER_CLOCK):
+		MIN_PWM_FREQ_HZ(MIN_PWM_FREQ_HZ), MASTER_CLOCK(MASTER_CLOCK) {
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 	__HAL_RCC_TIM4_CLK_ENABLE();
 	GPIO = GPIOB;
@@ -12,8 +12,8 @@ PWMCapture<4>::PWMCapture(const int maxTimerValue):
 }
 
 template<>
-PWMCapture<5>::PWMCapture(const int maxTimerValue):
-		maxTimerValue(maxTimerValue) {
+PWMCapture<5>::PWMCapture(const int MIN_PWM_FREQ_HZ, const int MASTER_CLOCK):
+		MIN_PWM_FREQ_HZ(MIN_PWM_FREQ_HZ), MASTER_CLOCK(MASTER_CLOCK) {
 	__HAL_RCC_GPIOA_CLK_ENABLE();
 	__HAL_RCC_TIM5_CLK_ENABLE();
 	GPIO = GPIOA;

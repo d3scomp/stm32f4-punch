@@ -1,12 +1,19 @@
 #pragma once
 
+#include <cstdio>
+
 #include "stm32f4xx_hal.h"
 
 template<int TIMER_INDEX>
 class PWMCapture {
 private:
 	TIM_HandleTypeDef htim;
-	const uint16_t maxTimerValue;
+	const int MIN_PWM_FREQ_HZ;
+	const int MASTER_CLOCK;
+	const uint16_t COUNTER_PERIOD = 0xffff;
+	const uint16_t TIMER_PRESCALER = 1 + (MASTER_CLOCK / COUNTER_PERIOD) / MIN_PWM_FREQ_HZ;
+	const uint16_t MAX_TIMER_VALUE = (MASTER_CLOCK / MIN_PWM_FREQ_HZ) / TIMER_PRESCALER;
+
 	
 	GPIO_TypeDef *GPIO;
 	uint32_t GPIOPin;
@@ -16,7 +23,7 @@ private:
 	
 
 public:
-	PWMCapture(const int maxTimerValue);
+	PWMCapture(const int MIN_PWM_FREQ_HZ, const int MASTER_CLOCK);
 	
 	void init() {
 		initPins();
@@ -34,7 +41,8 @@ public:
 	 * @param max Value representing 100% duty cycle
 	 */
 	int getDutyCycle(const int max) {
-		if(__HAL_TIM_GetCounter(&htim) > maxTimerValue) {
+		if(__HAL_TIM_GetCounter(&htim) > MAX_TIMER_VALUE) {
+			//std::printf("!!! PWM too slow !!!\r\n");
 			return 0;
 		} else {
 			uint32_t ch1 =  HAL_TIM_ReadCapturedValue(&htim, TIM_CHANNEL_1);
@@ -58,9 +66,9 @@ private:
 	// Enable timer4 for PWM capture
 	void initTimer() {
 		htim.Instance = timer;
-		htim.Init.Prescaler = 0;
+		htim.Init.Prescaler = TIMER_PRESCALER;
 		htim.Init.CounterMode = TIM_COUNTERMODE_UP;
-		htim.Init.Period = 0xFFFF;
+		htim.Init.Period = COUNTER_PERIOD;
 		htim.Init.ClockDivision = 0;
 		HAL_TIM_IC_Init(&htim);
 	}
