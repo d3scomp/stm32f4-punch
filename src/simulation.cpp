@@ -162,10 +162,6 @@ State PunchPress::update(uint32_t us_period) {
 		retval = x.getState(0, ERS_TABLE_PUNCH_AREA_WIDTH);
 		retval |= y.getState(1, ERS_TABLE_PUNCH_AREA_HEIGHT);
 
-		if (remainingPunchTime_ns == 0) {
-			retval |= State::US_HEAD_UP;
-		}
-
 		retval |= State::US_FAIL;
 	}
 
