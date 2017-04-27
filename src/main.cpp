@@ -124,6 +124,10 @@ bool readMotorYDirection() {
 	return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1);
 }
 
+bool readHeadState() {
+	return HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2);
+}
+
 TIM_HandleTypeDef htim2;
 const uint32_t TIM2_TICK_PER_US = 84;
 
@@ -200,7 +204,7 @@ int main(void) {
 	//std::printf("Waiting 1s...\r\n");
 	HAL_Delay(1000);
 
-	std::printf("#R\r\n");
+	std::printf("\r\n#R\r\n");
 	
 	uint32_t tim2last = getTimerCounter();
 	
@@ -213,12 +217,14 @@ int main(void) {
 		const uint8_t yDuty = pwmCaptureY.getDutyCycle(MOTOR_MAX_POWER);
 		const bool xDir = readMotorXDirection();
 		const bool yDir = readMotorYDirection();
+		const bool headDown = readHeadState();
 		const int8_t xPower = xDir ? xDuty : -(MOTOR_MAX_POWER - xDuty);
 		const int8_t yPower = yDir ? yDuty : -(MOTOR_MAX_POWER - yDuty);
 		
 		// Pass input to simulation
 		pp.x.power = xPower;
 		pp.y.power = yPower;
+		pp.punch = headDown;
 		
 		//std::printf("Power(Direction, DutyCycle): X: %03d (%03d, %03d), Y: %03d (%03d, %03d)\r\n", xPower, xDir, xDuty, yPower, yDir, yDuty);
 		

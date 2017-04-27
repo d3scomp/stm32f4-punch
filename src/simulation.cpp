@@ -105,7 +105,7 @@ uint32_t Axis::updateAxis(uint32_t us_period, int vertical, int32_t max_axis_val
 }
 
 PunchPress::PunchPress():
-	irqEnabled(false), failed(false), punch(false), remainingPunchTime_ns(0), punchedPunches(0) {
+	irqEnabled(false), failed(false), punch(false), head_down(false), remainingPunchTime_ns(0) {
 	x.setEncoder();
 	y.setEncoder();
 
@@ -131,41 +131,31 @@ State PunchPress::update(uint32_t us_period) {
 			failed = 1;
 		}
 	
-		if (punch) {
-			if (remainingPunchTime_ns > 0 || abint32_t(x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
-				failed = 1;
-				retval |= State::US_FAIL;
-				return retval;
-			}
-
-			lastPunch.xPos = x.headPos_nm;
-			lastPunch.yPos = y.headPos_nm;
+		// Handle a punch
+		if (punch && !head_down) {
+			head_down = true;
 			remainingPunchTime_ns = ERS_PUNCH_DURATION_MS * 1000;
-
-//			mb(); // decrease the number of punches only after the punch has started
-#warning mb() omitted !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-			punch = 0;
-
-		} else {
-			if (remainingPunchTime_ns > 0) {
-				remainingPunchTime_ns -= us_period;
-
-				if (abint32_t(x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
+		} else if(punch){
+			remainingPunchTime_ns -= us_period;
+		}
+		
+		if(!punch && head_down) {
+			remainingPunchTime_ns -= us_period;
+			if (remainingPunchTime_ns <= 0) {
+				head_down = false;
+				remainingPunchTime_ns = 0;
+			}
+		}
+		
+		if(head_down){
+			// Fail if head is down and still moving
+			if (abint32_t(x.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S || abint32_t(y.velocity_um_s) > ERS_PUNCH_MAX_VEL_UM_S) {
 					failed = 1;
 					retval |= State::US_FAIL;
 					return retval;
-				}
-
-				if (remainingPunchTime_ns <= 0)
-				{
-					retval |= State::US_HEAD_UP;
-					remainingPunchTime_ns = 0;
-					++punchedPunches;
-				}
-			} else {
-				retval |= State::US_HEAD_UP;
 			}
+		} else {
+			retval |= State::US_HEAD_UP;
 		}
 
 	} else {

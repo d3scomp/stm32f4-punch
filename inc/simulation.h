@@ -181,21 +181,20 @@ public:
 	bool failed;
 
 	/**
-	 * @brief Whenever punch was requested
+	 * @brief Punch signal
 	 */
 	bool punch;
+	
+	/**
+	 * @brief Indicates whether head is down
+	 */
+	bool head_down;
 
 	/**
 	 * @brief Time remaining to complete the current punch (ns)
 	 */
 	int32_t remainingPunchTime_ns;
 
-	Punch lastPunch;
-
-	/**
-	 * @brief Number of punched punches
-	 */
-	uint32_t punchedPunches;
 };
 
 
