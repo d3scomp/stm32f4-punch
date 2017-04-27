@@ -146,11 +146,15 @@ uint32_t getTimerCounter() {
 	return __HAL_TIM_GetCounter(&htim2);
 }
 
+
 const int X_AXIS_TIMER = 5;
 const int Y_AXIS_TIMER = 4;
 const int MIN_PWM_FREQ_HZ = 500;
 const int MOTOR_MAX_POWER = 128;
 const int MASTER_CLOCK = 168000000;
+
+PWMCapture<X_AXIS_TIMER> pwmCaptureX(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
+PWMCapture<Y_AXIS_TIMER> pwmCaptureY(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
 
 int main(void) {
 	/* STM32F4xx HAL library initialization:
@@ -174,9 +178,7 @@ int main(void) {
 	
 	initPunchInput();
 	initPunchOutput();
-	
-	PWMCapture<X_AXIS_TIMER> pwmCaptureX(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
-	PWMCapture<Y_AXIS_TIMER> pwmCaptureY(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
+
 	pwmCaptureX.init();
 	pwmCaptureY.init();
 	
