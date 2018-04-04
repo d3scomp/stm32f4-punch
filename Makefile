@@ -6,30 +6,33 @@ ELF = $(PROJECT).elf
 STM32F4CUBE=../stm32f4cube
 CMSIS=$(STM32F4CUBE)/Drivers/CMSIS
 HAL=$(STM32F4CUBE)/Drivers/STM32F4xx_HAL_Driver
-
+HCD=$(STM32F4CUBE)/Middlewares/ST/STM32_USB_Device_Library
 # Toolchain paths (adjust to match your needs)
-CC=armv7m-hardfloat-eabi-gcc
-CXX=armv7m-hardfloat-eabi-g++
-LD=armv7m-hardfloat-eabi-ld
-OBJCOPY=armv7m-hardfloat-eabi-objcopy
-SIZE=armv7m-hardfloat-eabi-size
-GDB=armv7m-hardfloat-eabi-gdb
+TOOLCHAIN_PREFIX=arm-none-eabi-
+CC=$(TOOLCHAIN_PREFIX)gcc
+CXX=$(TOOLCHAIN_PREFIX)g++
+LD=$(TOOLCHAIN_PREFIX)ld
+OBJCOPY=$(TOOLCHAIN_PREFIX)objcopy
+SIZE=$(TOOLCHAIN_PREFIX)size
+GDB=$(TOOLCHAIN_PREFIX)gdb
 OPENOCD=openocd
 
 # Compiler and linker options
-CFLAGS = -mcpu=cortex-m4 -g -Os -Wall -pipe -fno-exceptions -fomit-frame-pointer
+CFLAGS = -mcpu=cortex-m4 -g -Os -Wall -pipe -fno-exceptions -fomit-frame-pointer -fpermissive
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 CFLAGS += -MMD -MP
 CFLAGS += -D STM32F407xx
 CXXFLAGS = $(CFLAGS) -std=c++11
-LDFLAGS=-T STM32F407VG_FLASH.ld -specs=nosys.specs
+LDFLAGS=-T STM32F407VG_FLASH.ld -specs=nosys.specs -Wl,-Map,$(PROJECT).map  
 
 # Includes including library includes
 INCLUDES=\
 -I./inc \
 -I$(HAL)/Inc \
 -I$(CMSIS)/Device/ST/STM32F4xx/Include \
--I$(CMSIS)/Include
+-I$(CMSIS)/Include \
+-I$(HCD)/Core/Inc \
+-I$(HCD)/Class/HID/Inc
 
 # Application objects
 APP_OBJECTS=\
@@ -40,7 +43,9 @@ src/main.o \
 src/simulation.o \
 src/xorshift.o \
 src/PWMCapture.o \
-src/UART.o
+src/UART.o \
+src/usbd_conf.o \
+src/usbd_desc.o
 
 # Currenly used HAL module objects
 HAL_OBJECTS=\
@@ -56,6 +61,16 @@ $(HAL)/Src/stm32f4xx_hal_cortex.o \
 \
 $(HAL)/Src/stm32f4xx_hal_usart.o \
 $(HAL)/Src/stm32f4xx_hal_uart.o \
+\
+$(HAL)/Src/stm32f4xx_ll_usb.o \
+$(HAL)/Src/stm32f4xx_hal_pcd.o \
+$(HAL)/Src/stm32f4xx_hal_pcd_ex.o
+
+HCD_OBJECTS=\
+$(HCD)/Core/Src/usbd_core.o \
+$(HCD)/Core/Src/usbd_ioreq.o \
+$(HCD)/Core/Src/usbd_ctlreq.o \
+$(HCD)/Class/HID/Src/usbd_hid.o 
 
 # Available HAL module objects
 HAL_OBJECTS_EXTRA=\
@@ -115,7 +130,7 @@ $(HAL)/Src/stm32f4xx_hal_flash_ramfunc.o \
 $(HAL)/Src/stm32f4xx_hal_fmpi2c.o \
 $(HAL)/Src/stm32f4xx_hal_fmpi2c_ex.o
 
-OBJECTS=$(APP_OBJECTS) $(HAL_OBJECTS)
+OBJECTS=$(APP_OBJECTS) $(HAL_OBJECTS) $(HCD_OBJECTS)
 
 DEPENDENCIES=$(OBJECTS:.o=.d)
 

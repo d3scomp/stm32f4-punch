@@ -41,6 +41,11 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_rcc_ex.h"
 
+#include "usbd_core.h"
+#include "usbd_def.h"
+#include "usbd_desc.h"
+#include "usbd_hid.h"
+
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/

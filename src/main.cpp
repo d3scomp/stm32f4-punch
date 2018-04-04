@@ -156,6 +156,9 @@ const int MASTER_CLOCK = 168000000;
 PWMCapture<X_AXIS_TIMER> pwmCaptureX(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
 PWMCapture<Y_AXIS_TIMER> pwmCaptureY(MIN_PWM_FREQ_HZ, MASTER_CLOCK);
 
+extern PCD_HandleTypeDef hpcd;
+USBD_HandleTypeDef USBD_Device;
+
 int main(void) {
 	/* STM32F4xx HAL library initialization:
 		- Configure the Flash prefetch, Flash preread and Buffer caches
@@ -168,9 +171,62 @@ int main(void) {
 		*/
 	HAL_Init();
 
-	// Configure the system clock to 168 MHz
+	// Configure the system clock
 	SystemClock_Config();
 
+	initUARTConsole();
+	printf("System started\r\n");
+	
+	LEDDriver leds;
+	leds.init();	
+	
+	for(int cnt = 0; cnt < 8; cnt++) {
+		switch(cnt % 4) {
+			case 0: leds.toggleOrange(); break;
+			case 1: leds.toggleRed(); break;
+			case 2: leds.toggleBlue(); break;
+			case 3: leds.toggleGreen(); break;
+		}
+		
+		HAL_Delay(100); // 100ms
+	}
+	
+	
+	///////////////////////////////////// USB
+	
+	HAL_NVIC_SetPriority(SysTick_IRQn, 6, 0);
+	HAL_NVIC_SetPriority(OTG_FS_IRQn, 4, 2);
+	
+	/* Init Device Library */
+	USBD_Init(&USBD_Device, &HID_Desc, 0);
+
+	/* Add Supported Class */
+	USBD_RegisterClass(&USBD_Device, USBD_HID_CLASS);
+
+	/* Start Device Process */
+	USBD_Start(&USBD_Device);
+	
+	
+	
+	for(int cnt = 0; cnt < 8; cnt++) {
+		switch(cnt % 4) {
+			case 3: leds.toggleOrange(); break;
+			case 2: leds.toggleRed(); break;
+			case 1: leds.toggleBlue(); break;
+			case 0: leds.toggleGreen(); break;
+		}
+		
+		HAL_Delay(100); // 100ms
+	}
+	
+	while(true) {
+	
+		HAL_Delay(100); // 100ms
+		
+		leds.toggleGreen();
+		
+	}
+	/*
 	LEDDriver leds;
 	leds.init();
 
@@ -234,16 +290,7 @@ int main(void) {
 		uint32_t tim2new = getTimerCounter();
 		State state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		/*std::printf("[%ld, %ld] state:%ld f:%d left: %s, top: %s, Px: %03d, Py: %03d\r\n",
-					pp.x.headPos_nm,
-					pp.y.headPos_nm,
-					state,
-					pp.failed,
-					(state.getSafeLeft()) ? "1" : "0",
-					(state.getSafeTop()) ? "1" : "0",
-					xPower,
-					yPower
-		);*/
+		
 
 		if(pp.failed) {
 			std::printf("#F\r\n");
@@ -281,7 +328,7 @@ int main(void) {
 		
 		// Signal simulation step (used to analyze simulator performance)
 		leds.toggleGreen();
-	}
+	}*/
 }
 
 /**

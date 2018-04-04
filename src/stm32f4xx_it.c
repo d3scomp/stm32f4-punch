@@ -1,16 +1,14 @@
 /**
   ******************************************************************************
-  * @file    Templates/Src/stm32f4xx_it.c 
+  * @file    USB_Device/HID_Standalone/Src/stm32f4xx_it.c 
   * @author  MCD Application Team
-  * @version V1.2.5
-  * @date    04-November-2016
   * @brief   Main Interrupt Service Routines.
   *          This file provides template for all exceptions handler and 
   *          peripherals interrupt service routine.
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -38,14 +36,13 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "stm32f4xx_it.h"
 
-/** @addtogroup STM32F4xx_HAL_Examples
+/** @addtogroup STM32F4xx_HAL_Applications
   * @{
   */
 
-/** @addtogroup Templates
+/** @addtogroup USB_Device_HID_Standalone
   * @{
   */
 
@@ -53,6 +50,8 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+extern PCD_HandleTypeDef hpcd;
+extern USBD_HandleTypeDef USBD_Device;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -167,18 +166,41 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
-  * @brief  This function handles PPP interrupt request.
+  * @brief  This function handles USB-On-The-Go FS global interrupt request.
   * @param  None
   * @retval None
   */
-/*void PPP_IRQHandler(void)
+
+void OTG_FS_IRQHandler(void)
 {
-}*/
+	HAL_PCD_IRQHandler(&hpcd);
+}
+
+/**
+  * @brief  This function handles USB OTG FS Wakeup IRQ Handler.
+  * @param  None
+  * @retval None
+  */
+void OTG_FS_WKUP_IRQHandler(void)
+{
+	while(true);
+}
 
 
 /**
+  * @brief  This function handles External line 0 interrupt request.
+  * @param  None
+  * @retval None
+  */
+void EXTI0_IRQHandler(void)
+{
+	while(true);
+  //HAL_GPIO_EXTI_IRQHandler(WAKEUP_BUTTON_PIN);
+}
+
+/**
   * @}
-  */ 
+  */
 
 /**
   * @}
