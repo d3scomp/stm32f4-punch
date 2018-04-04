@@ -201,7 +201,7 @@ int main(void) {
 	USBD_Init(&USBD_Device, &HID_Desc, 0);
 
 	/* Add Supported Class */
-	USBD_RegisterClass(&USBD_Device, USBD_HID_CLASS);
+	USBD_RegisterClass(&USBD_Device, USBD_PUNCHPRESS_CLASS);
 
 	/* Start Device Process */
 	USBD_Start(&USBD_Device);
@@ -224,6 +224,10 @@ int main(void) {
 		HAL_Delay(100); // 100ms
 		
 		leds.toggleGreen();
+		
+		char* data = "HELLO THERE";
+		
+		USBD_PUNCHPRESSS_SendPacket(&USBD_Device, data, strlen(data));
 		
 	}
 	/*

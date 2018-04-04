@@ -49,16 +49,16 @@
 
 /* Private typedef ----------------------------------------------------------- */
 /* Private define ------------------------------------------------------------ */
-#define USBD_VID                      0x0483
-#define USBD_PID                      0x5710
+#define USBD_VID                      0xdead
+#define USBD_PID                      0xf00d
 #define USBD_LANGID_STRING            0x409
-#define USBD_MANUFACTURER_STRING      "STMicroelectronics"
-#define USBD_PRODUCT_HS_STRING        "HID Joystick in HS Mode"
-#define USBD_PRODUCT_FS_STRING        "HID Joystick in FS Mode"
-#define USBD_CONFIGURATION_HS_STRING  "HID Config"
-#define USBD_INTERFACE_HS_STRING      "HID Interface"
-#define USBD_CONFIGURATION_FS_STRING  "HID Config"
-#define USBD_INTERFACE_FS_STRING      "HID Interface"
+#define USBD_MANUFACTURER_STRING      "MFF"
+#define USBD_PRODUCT_HS_STRING        "Punch press simulator in HS Mode"
+#define USBD_PRODUCT_FS_STRING        "Punch press simulator in FS Mode"
+#define USBD_CONFIGURATION_HS_STRING  "Punch press Config"
+#define USBD_INTERFACE_HS_STRING      "Punch press Interface"
+#define USBD_CONFIGURATION_FS_STRING  "Punch press Config"
+#define USBD_INTERFACE_FS_STRING      "Punch press Interface"
 
 /* Private macro ------------------------------------------------------------- */
 /* Private function prototypes ----------------------------------------------- */
@@ -100,8 +100,8 @@ __ALIGN_BEGIN uint8_t USBD_DeviceDesc[USB_LEN_DEV_DESC] __ALIGN_END = {
   USB_DESC_TYPE_DEVICE,         /* bDescriptorType */
   0x00,                         /* bcdUSB */
   0x02,
-  0x00,                         /* bDeviceClass */
-  0x00,                         /* bDeviceSubClass */
+  239,                         /* bDeviceClass */
+  2,                           /* bDeviceSubClass */
   0x00,                         /* bDeviceProtocol */
   USB_MAX_EP0_SIZE,             /* bMaxPacketSize */
   LOBYTE(USBD_VID),             /* idVendor */
@@ -159,11 +159,9 @@ uint8_t *USBD_HID_DeviceDescriptor(USBD_SpeedTypeDef speed, uint16_t * length)
   * @param  length: Pointer to data length variable
   * @retval Pointer to descriptor buffer
   */
-uint8_t *USBD_HID_LangIDStrDescriptor(USBD_SpeedTypeDef speed,
-                                      uint16_t * length)
-{
-  *length = sizeof(USBD_LangIDDesc);
-  return (uint8_t *) USBD_LangIDDesc;
+uint8_t *USBD_HID_LangIDStrDescriptor(USBD_SpeedTypeDef speed, uint16_t * length) {
+	*length = sizeof(USBD_LangIDDesc);
+	return (uint8_t *) USBD_LangIDDesc;
 }
 
 /**
@@ -212,7 +210,7 @@ uint8_t *USBD_HID_SerialStrDescriptor(USBD_SpeedTypeDef speed,
 
   /* Update the serial number string descriptor with the data from the unique
    * ID */
-  Get_SerialNum();
+  //Get_SerialNum();
 
   return (uint8_t *) USBD_StringSerial;
 }

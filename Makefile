@@ -45,7 +45,8 @@ src/xorshift.o \
 src/PWMCapture.o \
 src/UART.o \
 src/usbd_conf.o \
-src/usbd_desc.o
+src/usbd_desc.o \
+src/usbd_punchpress.o
 
 # Currenly used HAL module objects
 HAL_OBJECTS=\
@@ -70,7 +71,8 @@ HCD_OBJECTS=\
 $(HCD)/Core/Src/usbd_core.o \
 $(HCD)/Core/Src/usbd_ioreq.o \
 $(HCD)/Core/Src/usbd_ctlreq.o \
-$(HCD)/Class/HID/Src/usbd_hid.o 
+
+#$(HCD)/Class/HID/Src/usbd_hid.o
 
 # Available HAL module objects
 HAL_OBJECTS_EXTRA=\
@@ -170,6 +172,9 @@ flash2: $(ELF)
 # Debug
 debug: $(ELF)
 	$(GDB) $(ELF) -ex "target remote | openocd -f board/stm32f4discovery.cfg --pipe" -ex load
+
+debug2: $(ELF)
+	$(GDB) $(ELF) -ex "target remote | openocd -f board/stm32f4discovery-v2.cfg --pipe" -ex load
 
 -include $(DEPENDENCIES)
 

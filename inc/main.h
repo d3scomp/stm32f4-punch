@@ -44,7 +44,7 @@
 #include "usbd_core.h"
 #include "usbd_def.h"
 #include "usbd_desc.h"
-#include "usbd_hid.h"
+#include "usbd_punchpress.h"
 
 
 /* Exported types ------------------------------------------------------------*/
