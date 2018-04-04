@@ -148,11 +148,33 @@ __ALIGN_BEGIN static uint8_t USBD_PUNCHPRESS_CfgDesc[USB_PUNCHPRESS_CONFIG_DESC_
   0x00,         /*iConfiguration: Index of string descriptor describing the configuration*/
   0xE0,         /*bmAttributes: bus powered and Supports Remote Wakeup */
   0x32,         /*MaxPower 100 mA: this current is used for detecting Vbus*/
+    
+  /**********  Descriptor of PUNCHPRESS interface 0 **************/  
   /* 09 */
+  0x09,         /*bLength: Interface Descriptor size*/
+  USB_DESC_TYPE_INTERFACE,/*bDescriptorType: Interface descriptor type*/
+  0x00,         /*bInterfaceNumber: Number of Interface*/
+  0x00,         /*bAlternateSetting: Alternate setting*/
+  0x01,         /*bNumEndpoints*/
+  0xff,         /*bInterfaceClass: vendor specific*/
+  0xff,         /*bInterfaceSubClass: vendor specific*/
+  0xff,         /*nInterfaceProtocol: vendor specific*/
+  0,            /*iInterface: Index of string descriptor*/
+
+  /******************** Descriptor of Mouse endpoint ********************/
+  /* 27 */
+  0x07,          /*bLength: Endpoint Descriptor size*/
+  USB_DESC_TYPE_ENDPOINT, /*bDescriptorType:*/
   
-  /**********  Descriptor of PUNCHPRESS interface 0 Alternate setting 0 **************/  
- 
+  0x81,     /*bEndpointAddress: Endpoint Address (IN)*/
+  0x03,          /*bmAttributes: Interrupt endpoint*/
+  0x20, /*wMaxPacketSize: Bytes*/
+  0x00,
+  0x07,          /*bInterval: Polling Interval (10 ms)*/
+  /* 34 */
+  
 };
+
 
 #if defined ( __ICCARM__ ) /*!< IAR Compiler */
   #pragma data_alignment=4   
@@ -193,7 +215,7 @@ static uint8_t  USBD_PUNCHPRESS_Init (USBD_HandleTypeDef *pdev, uint8_t cfgidx) 
 	USBD_LL_OpenEP(pdev,
 		0x81,
 		USBD_EP_TYPE_INTR,
-		4);
+		0x20);
 
 	pdev->pClassData = USBD_malloc(sizeof (USBD_PUNCHPRESS_HandleTypeDef));
 

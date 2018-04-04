@@ -7,5 +7,6 @@ punchpresssim.creator
 punchpresssim.creator.user
 punchpresssim.files
 punchpresssim.includes
+punchpresssim.map
 
 openocd.log
