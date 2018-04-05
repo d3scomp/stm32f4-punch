@@ -174,68 +174,29 @@ int main(void) {
 	// Configure the system clock
 	SystemClock_Config();
 
-	initUARTConsole();
-	printf("System started\r\n");
 	
-// 	LEDDriver leds;
-// 	leds.init();	
-// 	
-// 	for(int cnt = 0; cnt < 8; cnt++) {
-// 		switch(cnt % 4) {
-// 			case 0: leds.toggleOrange(); break;
-// 			case 1: leds.toggleRed(); break;
-// 			case 2: leds.toggleBlue(); break;
-// 			case 3: leds.toggleGreen(); break;
-// 		}
-// 		
-// 		HAL_Delay(100); // 100ms
-// 	}
-	
-	
-	///////////////////////////////////// USB
-	
+	// Init USB
 	HAL_NVIC_SetPriority(SysTick_IRQn, 6, 0);
 	HAL_NVIC_SetPriority(OTG_FS_IRQn, 4, 2);
 	
-	/* Init Device Library */
+	// Init Device Library
 	USBD_Init(&USBD_Device, &HID_Desc, 0);
 
-	/* Add Supported Class */
+	// Add Supported Class
 	USBD_RegisterClass(&USBD_Device, USBD_PUNCHPRESS_CLASS);
 
-	/* Start Device Process */
+	// Start Device Process
 	USBD_Start(&USBD_Device);
 	
 	
-	/*
-	for(int cnt = 0; cnt < 8; cnt++) {
-		switch(cnt % 4) {
-			case 3: leds.toggleOrange(); break;
-			case 2: leds.toggleRed(); break;
-			case 1: leds.toggleBlue(); break;
-			case 0: leds.toggleGreen(); break;
-		}
-		
-		HAL_Delay(100); // 100ms
-	}*/
-	/*
-	while(true) {
-	
-		HAL_Delay(100); // 100ms
-		
-		leds.toggleGreen();
-		
-		char* data = "HELLO THERE";
-		
-		USBD_PUNCHPRESSS_SendPacket(&USBD_Device, data, strlen(data));
-		
-	}*/
-	
+	// Init LEDs
 	LEDDriver leds;
 	leds.init();
 
+	// Init UART
 	initUARTConsole();
 	
+	// Init IO
 	initPunchInput();
 	initPunchOutput();
 
