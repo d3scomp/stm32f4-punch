@@ -8,12 +8,13 @@ CMSIS=$(STM32F4CUBE)/Drivers/CMSIS
 HAL=$(STM32F4CUBE)/Drivers/STM32F4xx_HAL_Driver
 
 # Toolchain paths (adjust to match your needs)
-CC=armv7m-hardfloat-eabi-gcc
-CXX=armv7m-hardfloat-eabi-g++
-LD=armv7m-hardfloat-eabi-ld
-OBJCOPY=armv7m-hardfloat-eabi-objcopy
-SIZE=armv7m-hardfloat-eabi-size
-GDB=armv7m-hardfloat-eabi-gdb
+TOOLCHAIN=arm-none-eabi
+CC=$(TOOLCHAIN)-gcc
+CXX=$(TOOLCHAIN)-g++
+LD=$(TOOLCHAIN)-ld
+OBJCOPY=$(TOOLCHAIN)-objcopy
+SIZE=$(TOOLCHAIN)-size
+GDB=$(TOOLCHAIN)-gdb
 OPENOCD=openocd
 
 # Compiler and linker options
