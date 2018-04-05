@@ -227,8 +227,9 @@ int main(void) {
 	//std::printf("Waiting 1s...\r\n");
 	HAL_Delay(1000);
 
-	std::printf("\r\n#R\r\n");
-	USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "\r\n#R\r\n", 6);
+// 	std::printf("\r\n#R\r\n");
+// 	USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "\r\n#R\r\n", 6);
+	USBD_PUNCHPRESSS_SendResetMesage(&USBD_Device);
 	
 	uint32_t tim2last = getTimerCounter();
 	
@@ -261,26 +262,30 @@ int main(void) {
 		
 
 		if(pp.failed) {
-			std::printf("#F\r\n");
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#F\r\n", 3);
+			//std::printf("#F\r\n");
+			//USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#F\r\n", 3);
+			USBD_PUNCHPRESSS_SendFailMesage(&USBD_Device);
 		} else {
-			std::printf("#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
-			//std::printf("#H%ld;%ld;ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm, pp.x.velocity_um_s, pp.y.velocity_um_s);
+			//std::printf("#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
+			////std::printf("#H%ld;%ld;ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm, pp.x.velocity_um_s, pp.y.velocity_um_s);
 			
-			int len = sprintf(buff, "#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, buff, len);
+			//int len = sprintf(buff, "#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
+			//USBD_PUNCHPRESSS_SendPacket(&USBD_Device, buff, len);
+			USBD_PUNCHPRESSS_SendHeadPositionMesage(&USBD_Device, pp.x.headPos_nm, pp.y.headPos_nm);
 		}
 
 		if(state.getHeadUp() && !oldHeadUp) {
 			oldHeadUp = true;
-			std::printf("#U\r\n");
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#U\r\n", 3);
+// 			std::printf("#U\r\n");
+// 			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#U\r\n", 3);
+			USBD_PUNCHPRESSS_SendHeadUpMesage(&USBD_Device);
 		}
 
 		if(!state.getHeadUp() && oldHeadUp) {
 			oldHeadUp = false;
-			std::printf("#D\r\n");
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#D\r\n", 3);
+// 			std::printf("#D\r\n");
+// 			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#D\r\n", 3);
+			USBD_PUNCHPRESSS_SendHeadDownMesage(&USBD_Device);
 		}
 
 		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);

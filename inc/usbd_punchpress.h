@@ -37,7 +37,7 @@
 #include  "usbd_ioreq.h"
 
 #define PUNCHPRESS_EPIN_ADDR 0x81
-#define PUNCHPRESS_EPIN_SIZE 0x40
+#define PUNCHPRESS_EPIN_SIZE 16
 
 #define USB_PUNCHPRESS_CONFIG_DESC_SIZ       34
 
@@ -52,6 +52,27 @@ extern USBD_ClassTypeDef  USBD_PUNCHPRESS_ClassDriver;
 
 uint8_t USBD_PUNCHPRESSS_SendPacket(USBD_HandleTypeDef *pdev, uint8_t *data, uint16_t len);
 
+uint8_t USBD_PUNCHPRESSS_SendResetMesage(USBD_HandleTypeDef *pdev);
+uint8_t USBD_PUNCHPRESSS_SendFailMesage(USBD_HandleTypeDef *pdev);
+uint8_t USBD_PUNCHPRESSS_SendHeadPositionMesage(USBD_HandleTypeDef *pdev, int32_t x, int32_t y);
+uint8_t USBD_PUNCHPRESSS_SendHeadUpMesage(USBD_HandleTypeDef *pdev);
+uint8_t USBD_PUNCHPRESSS_SendHeadDownMesage(USBD_HandleTypeDef *pdev);
+
 typedef struct {
 	bool idle;
 } USBD_PUNCHPRESS_HandleTypeDef;
+
+enum PunchpressMessage: uint8_t {
+	INVALID = 0,
+	REBOOT = 1,
+	FAIL = 2,
+	HEAD_POSITION = 3,
+	HEAD_UP = 4,
+	HEAD_DOWN = 5
+};
+
+typedef struct {
+	uint8_t type;
+	int32_t x;
+	int32_t y;
+} HeadPositionMessage;
