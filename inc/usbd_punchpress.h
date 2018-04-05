@@ -36,83 +36,22 @@
 /* Includes ------------------------------------------------------------------*/
 #include  "usbd_ioreq.h"
 
-/** @addtogroup STM32_USB_DEVICE_LIBRARY
-  * @{
-  */
-  
-/** @defgroup USBD_PUNCHPRESS
-  * @brief This file is the header file for usbd_template_core.c
-  * @{
-  */ 
-
-
-/** @defgroup USBD_PUNCHPRESS_Exported_Defines
-  * @{
-  */ 
-#define PUNCHPRESS_EPIN_ADDR                 0x81
-#define PUNCHPRESS_EPIN_SIZE                 0x40
+#define PUNCHPRESS_EPIN_ADDR 0x81
+#define PUNCHPRESS_EPIN_SIZE 0x40
 
 #define USB_PUNCHPRESS_CONFIG_DESC_SIZ       34
 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_CORE_Exported_TypesDefinitions
-  * @{
-  */
-
-/**
-  * @}
-  */ 
-
-
-
-/** @defgroup USBD_CORE_Exported_Macros
-  * @{
-  */ 
-
-/**
-  * @}
-  */ 
-
-/** @defgroup USBD_CORE_Exported_Variables
-  * @{
-  */ 
-
 extern USBD_ClassTypeDef  USBD_PUNCHPRESS_ClassDriver;
 #define USBD_PUNCHPRESS_CLASS &USBD_PUNCHPRESS_ClassDriver
-/**
-  * @}
-  */ 
-
-/** @defgroup USB_CORE_Exported_Functions
-  * @{
-  */ 
-/**
-  * @}
-  */ 
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif  /* __USB_PUNCHPRESS_CORE_H */
-/**
-  * @}
-  */ 
-
-/**
-  * @}
-  */ 
-  
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
 
 uint8_t USBD_PUNCHPRESSS_SendPacket(USBD_HandleTypeDef *pdev, uint8_t *data, uint16_t len);
 
 typedef struct {
 	bool idle;
 } USBD_PUNCHPRESS_HandleTypeDef;
-
