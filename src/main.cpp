@@ -177,19 +177,19 @@ int main(void) {
 	initUARTConsole();
 	printf("System started\r\n");
 	
-	LEDDriver leds;
-	leds.init();	
-	
-	for(int cnt = 0; cnt < 8; cnt++) {
-		switch(cnt % 4) {
-			case 0: leds.toggleOrange(); break;
-			case 1: leds.toggleRed(); break;
-			case 2: leds.toggleBlue(); break;
-			case 3: leds.toggleGreen(); break;
-		}
-		
-		HAL_Delay(100); // 100ms
-	}
+// 	LEDDriver leds;
+// 	leds.init();	
+// 	
+// 	for(int cnt = 0; cnt < 8; cnt++) {
+// 		switch(cnt % 4) {
+// 			case 0: leds.toggleOrange(); break;
+// 			case 1: leds.toggleRed(); break;
+// 			case 2: leds.toggleBlue(); break;
+// 			case 3: leds.toggleGreen(); break;
+// 		}
+// 		
+// 		HAL_Delay(100); // 100ms
+// 	}
 	
 	
 	///////////////////////////////////// USB
@@ -207,7 +207,7 @@ int main(void) {
 	USBD_Start(&USBD_Device);
 	
 	
-	
+	/*
 	for(int cnt = 0; cnt < 8; cnt++) {
 		switch(cnt % 4) {
 			case 3: leds.toggleOrange(); break;
@@ -217,8 +217,8 @@ int main(void) {
 		}
 		
 		HAL_Delay(100); // 100ms
-	}
-	
+	}*/
+	/*
 	while(true) {
 	
 		HAL_Delay(100); // 100ms
@@ -229,8 +229,8 @@ int main(void) {
 		
 		USBD_PUNCHPRESSS_SendPacket(&USBD_Device, data, strlen(data));
 		
-	}
-	/*
+	}*/
+	
 	LEDDriver leds;
 	leds.init();
 
@@ -267,10 +267,13 @@ int main(void) {
 	HAL_Delay(1000);
 
 	std::printf("\r\n#R\r\n");
+	USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "\r\n#R\r\n", 7);
 	
 	uint32_t tim2last = getTimerCounter();
 	
 	bool oldHeadUp = false;
+	
+	char buff[PUNCHPRESS_EPIN_SIZE];
 
 	// Infinite loop
 	while (1) {
@@ -298,19 +301,25 @@ int main(void) {
 
 		if(pp.failed) {
 			std::printf("#F\r\n");
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#F\r\n", 4);
 		} else {
 			std::printf("#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
 			//std::printf("#H%ld;%ld;ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm, pp.x.velocity_um_s, pp.y.velocity_um_s);
+			
+			sprintf(buff, "#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, buff, strlen(buff));
 		}
 
 		if(state.getHeadUp() && !oldHeadUp) {
 			oldHeadUp = true;
 			std::printf("#U\r\n");
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#U\r\n", 4);
 		}
 
 		if(!state.getHeadUp() && oldHeadUp) {
 			oldHeadUp = false;
 			std::printf("#D\r\n");
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#D\r\n", 4);
 		}
 
 		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
@@ -332,7 +341,7 @@ int main(void) {
 		
 		// Signal simulation step (used to analyze simulator performance)
 		leds.toggleGreen();
-	}*/
+	}
 }
 
 /**

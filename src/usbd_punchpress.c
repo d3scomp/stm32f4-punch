@@ -48,72 +48,13 @@
 #include "usbd_desc.h"
 #include "usbd_ctlreq.h"
 
-
-/** @addtogroup STM32_USB_DEVICE_LIBRARY
-  * @{
-  */
-
-
-/** @defgroup USBD_PUNCHPRESS 
-  * @brief usbd core module
-  * @{
-  */ 
-
-/** @defgroup USBD_PUNCHPRESS_Private_TypesDefinitions
-  * @{
-  */ 
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_PUNCHPRESS_Private_Defines
-  * @{
-  */ 
-
-/**
-  * @}
-  */ 
-
-
-/** @defgroup USBD_PUNCHPRESS_Private_Macros
-  * @{
-  */ 
-                                         
-/**
-  * @}
-  */ 
-
-
-
-
-/** @defgroup USBD_PUNCHPRESS_Private_FunctionPrototypes
-  * @{
-  */
-
-
-static uint8_t  USBD_PUNCHPRESS_Init (USBD_HandleTypeDef *pdev, 
-                               uint8_t cfgidx);
-
-static uint8_t  USBD_PUNCHPRESS_DeInit (USBD_HandleTypeDef *pdev, 
-                                 uint8_t cfgidx);
-
-static uint8_t  USBD_PUNCHPRESS_Setup (USBD_HandleTypeDef *pdev, 
-                                USBD_SetupReqTypedef *req);
-
+static uint8_t  USBD_PUNCHPRESS_Init (USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+static uint8_t  USBD_PUNCHPRESS_DeInit (USBD_HandleTypeDef *pdev, uint8_t cfgidx);
+static uint8_t  USBD_PUNCHPRESS_Setup (USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req);
 static uint8_t  *USBD_PUNCHPRESS_GetCfgDesc (uint16_t *length);
-
 static uint8_t  *USBD_PUNCHPRESS_GetDeviceQualifierDesc (uint16_t *length);
-
 static uint8_t  USBD_PUNCHPRESS_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum);
 
-/**
-  * @}
-  */ 
-
-/** @defgroup USBD_PUNCHPRESS_Private_Variables
-  * @{
-  */ 
 
 USBD_ClassTypeDef USBD_PUNCHPRESS_ClassDriver = {
   USBD_PUNCHPRESS_Init,
@@ -163,16 +104,15 @@ __ALIGN_BEGIN static uint8_t USBD_PUNCHPRESS_CfgDesc[USB_PUNCHPRESS_CONFIG_DESC_
 
   /******************** Descriptor of Mouse endpoint ********************/
   /* 27 */
-  0x07,          /*bLength: Endpoint Descriptor size*/
-  USB_DESC_TYPE_ENDPOINT, /*bDescriptorType:*/
-  
-  0x81,     /*bEndpointAddress: Endpoint Address (IN)*/
-  0x03,          /*bmAttributes: Interrupt endpoint*/
-  0x20, /*wMaxPacketSize: Bytes*/
-  0x00,
-  0x07,          /*bInterval: Polling Interval (10 ms)*/
+  0x07, // bLength: Endpoint Descriptor size
+  USB_DESC_TYPE_ENDPOINT, // bDescriptorType:
+
+  PUNCHPRESS_EPIN_ADDR, // bEndpointAddress: Endpoint Address (IN)
+  USBD_EP_TYPE_INTR, // bmAttributes: Interrupt endpoint
+  PUNCHPRESS_EPIN_SIZE, // wMaxPacketSize: Bytes
+  0x00, 
+  0x07, // bInterval: Polling Interval (10 ms)
   /* 34 */
-  
 };
 
 
@@ -195,14 +135,6 @@ static uint8_t USBD_PUNCHPRESS_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] =
 };
 
 /**
-  * @}
-  */ 
-
-/** @defgroup USBD_PUNCHPRESS_Private_Functions
-  * @{
-  */ 
-
-/**
   * @brief  USBD_PUNCHPRESS_Init
   *         Initialize the PUNCHPRESS interface
   * @param  pdev: device instance
@@ -212,10 +144,7 @@ static uint8_t USBD_PUNCHPRESS_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] =
 static uint8_t  USBD_PUNCHPRESS_Init (USBD_HandleTypeDef *pdev, uint8_t cfgidx) {
 	printf("USB Initialize\r\n");
 
-	USBD_LL_OpenEP(pdev,
-		0x81,
-		USBD_EP_TYPE_INTR,
-		0x20);
+	USBD_LL_OpenEP(pdev, PUNCHPRESS_EPIN_ADDR, USBD_EP_TYPE_INTR, PUNCHPRESS_EPIN_SIZE);
 
 	pdev->pClassData = USBD_malloc(sizeof (USBD_PUNCHPRESS_HandleTypeDef));
 
@@ -327,22 +256,6 @@ uint8_t  *USBD_PUNCHPRESS_GetDeviceQualifierDesc (uint16_t *length)
   return USBD_PUNCHPRESS_DeviceQualifierDesc;
 }
 
-/**
-  * @}
-  */ 
-
-
-/**
-  * @}
-  */ 
-
-
-/**
-  * @}
-  */ 
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
-
 uint8_t USBD_PUNCHPRESSS_SendPacket(USBD_HandleTypeDef *pdev, uint8_t *data, uint16_t len) {
 //	printf("About to send report\r\n");
 	if (pdev->dev_state == USBD_STATE_CONFIGURED) {
@@ -350,7 +263,7 @@ uint8_t USBD_PUNCHPRESSS_SendPacket(USBD_HandleTypeDef *pdev, uint8_t *data, uin
 		if (((USBD_PUNCHPRESS_HandleTypeDef *)pdev->pClassData)->idle == 1) {
 // 			printf("About to send report - idle\r\n");
 			((USBD_PUNCHPRESS_HandleTypeDef *)pdev->pClassData)->idle = 0;
-			USBD_LL_Transmit (pdev, 0x81, data, len);
+			USBD_LL_Transmit (pdev, PUNCHPRESS_EPIN_ADDR, data, len);
 		}
 	}
 

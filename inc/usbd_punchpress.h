@@ -50,7 +50,7 @@
   * @{
   */ 
 #define PUNCHPRESS_EPIN_ADDR                 0x81
-#define PUNCHPRESS_EPIN_SIZE                 0x10
+#define PUNCHPRESS_EPIN_SIZE                 0x40
 
 #define USB_PUNCHPRESS_CONFIG_DESC_SIZ       34
 
