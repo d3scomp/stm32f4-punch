@@ -151,7 +151,7 @@ flash: $(ELF)
 
 # Flash final elf into device
 flash2: $(ELF)
-	${OPENOCD} -f board/stm32f4discovery-v2.cfg -c "program $< verify reset exit"
+	${OPENOCD} -f board/stm32f4discovery-v2.1.cfg -c "program $< verify reset exit"
 
 # Debug
 debug: $(ELF)
