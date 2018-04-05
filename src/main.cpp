@@ -253,7 +253,7 @@ int main(void) {
 		
 		//std::printf("Hello world: %d\r\n", cnt);
 		
-		HAL_Delay(100); // 100ms
+		HAL_Delay(25); // 25ms
 	}
 	
 	initTimeCounter();
@@ -267,7 +267,7 @@ int main(void) {
 	HAL_Delay(1000);
 
 	std::printf("\r\n#R\r\n");
-	USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "\r\n#R\r\n", 7);
+	USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "\r\n#R\r\n", 6);
 	
 	uint32_t tim2last = getTimerCounter();
 	
@@ -301,25 +301,25 @@ int main(void) {
 
 		if(pp.failed) {
 			std::printf("#F\r\n");
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#F\r\n", 4);
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#F\r\n", 3);
 		} else {
 			std::printf("#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
 			//std::printf("#H%ld;%ld;ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm, pp.x.velocity_um_s, pp.y.velocity_um_s);
 			
-			sprintf(buff, "#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, buff, strlen(buff));
+			int len = sprintf(buff, "#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, buff, len);
 		}
 
 		if(state.getHeadUp() && !oldHeadUp) {
 			oldHeadUp = true;
 			std::printf("#U\r\n");
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#U\r\n", 4);
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#U\r\n", 3);
 		}
 
 		if(!state.getHeadUp() && oldHeadUp) {
 			oldHeadUp = false;
 			std::printf("#D\r\n");
-			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#D\r\n", 4);
+			USBD_PUNCHPRESSS_SendPacket(&USBD_Device, "#D\r\n", 3);
 		}
 
 		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
