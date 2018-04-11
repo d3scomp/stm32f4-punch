@@ -237,8 +237,6 @@ uint8_t  *USBD_PUNCHPRESS_DeviceQualifierDescriptor (uint16_t *length)
   * @retval status
   */
 static uint8_t  USBD_PUNCHPRESS_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum) {
-	printf("USBD_PUNCHPRESS_DataIn\r\n");
-
 	((USBD_PUNCHPRESS_HandleTypeDef *)pdev->pClassData)->idle = 1;
 	
 	return USBD_OK;
@@ -257,11 +255,8 @@ uint8_t  *USBD_PUNCHPRESS_GetDeviceQualifierDesc (uint16_t *length)
 }
 
 uint8_t USBD_PUNCHPRESSS_SendPacket(USBD_HandleTypeDef *pdev, uint8_t *data, uint16_t len) {
-//	printf("About to send report\r\n");
 	if (pdev->dev_state == USBD_STATE_CONFIGURED) {
-// 		printf("About to send report - configured\r\n");
 		if (((USBD_PUNCHPRESS_HandleTypeDef *)pdev->pClassData)->idle == 1) {
-// 			printf("About to send report - idle\r\n");
 			((USBD_PUNCHPRESS_HandleTypeDef *)pdev->pClassData)->idle = 0;
 			USBD_LL_Transmit (pdev, PUNCHPRESS_EPIN_ADDR, data, len);
 		}
