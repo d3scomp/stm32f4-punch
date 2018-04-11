@@ -252,9 +252,6 @@ int main(void) {
 	}
 	
 	leds.onBlue();
-
-	//std::printf("Waiting 1s...\r\n");
-	HAL_Delay(1000);
 	
  	leds.offGreen();
 	leds.offOrange();
