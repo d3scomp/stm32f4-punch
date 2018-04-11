@@ -23,7 +23,7 @@ CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=hard -mfpu=fpv4-
 CFLAGS += -MMD -MP
 CFLAGS += -D STM32F407xx
 CXXFLAGS = $(CFLAGS) -std=c++11
-LDFLAGS=-T STM32F407VG_FLASH.ld -specs=nosys.specs -Wl,-Map,$(PROJECT).map  
+LDFLAGS=$(CFLAGS) -T STM32F407VG_FLASH.ld -specs=nosys.specs -Wl,-Map,$(PROJECT).map  
 
 # Includes including library includes
 INCLUDES=\
