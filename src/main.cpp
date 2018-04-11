@@ -74,11 +74,15 @@ void initPunchInput() {
 	// Enable input pins
 	__HAL_RCC_GPIOC_CLK_ENABLE();
 	GPIO_InitTypeDef GPIO_Init;
-	GPIO_Init.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2;
+	GPIO_Init.Pin = GPIO_PIN_0 | GPIO_PIN_1;
 	GPIO_Init.Mode = GPIO_MODE_INPUT;
-	GPIO_Init.Pull = GPIO_NOPULL;
+	GPIO_Init.Pull = GPIO_PULLUP;
 	GPIO_Init.Speed = GPIO_SPEED_HIGH;
 	GPIO_Init.Alternate = 0;
+	HAL_GPIO_Init(GPIOC, &GPIO_Init);
+	
+	GPIO_Init.Pin = GPIO_PIN_2;
+	GPIO_Init.Pull = GPIO_PULLDOWN;
 	HAL_GPIO_Init(GPIOC, &GPIO_Init);
 }
 
