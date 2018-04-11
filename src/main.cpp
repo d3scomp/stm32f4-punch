@@ -238,6 +238,8 @@ int main(void) {
 	
 	// Initialize punch press simulation
 	PunchPress pp;
+	
+	leds.onBlue();
 
 	if(readHeadPositionRandomization()) {
 		HAL_Delay(10);
@@ -251,7 +253,7 @@ int main(void) {
 		pp.setPos(10000000, 10000000);
 	}
 	
-	leds.onBlue();
+	
 	
  	leds.offGreen();
 	leds.offOrange();
