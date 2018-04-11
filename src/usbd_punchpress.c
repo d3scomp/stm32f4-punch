@@ -110,7 +110,7 @@ __ALIGN_BEGIN static uint8_t USBD_PUNCHPRESS_CfgDesc[USB_PUNCHPRESS_CONFIG_DESC_
   USBD_EP_TYPE_INTR, // bmAttributes: Interrupt endpoint
   PUNCHPRESS_EPIN_SIZE, // wMaxPacketSize: Bytes
   0x00, 
-  0x07, // bInterval: Polling Interval (10 ms)
+  0x01, // bInterval: Polling Interval (1 ms)
   /* 34 */
 };
 
