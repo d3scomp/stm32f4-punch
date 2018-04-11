@@ -75,4 +75,4 @@ typedef struct {
 	uint8_t type;
 	int32_t x;
 	int32_t y;
-} HeadPositionMessage;
+} __attribute__((packed)) HeadPositionMessage;
