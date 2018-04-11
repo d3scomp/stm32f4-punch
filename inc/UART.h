@@ -14,4 +14,4 @@ int _write(int file, char* ptr, int len);
 /**
  * Initialize UART2 to be used as console
  **/
-void initUARTConsole();
+void initUARTConsole(const uint32_t baud);
