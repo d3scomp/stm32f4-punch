@@ -267,8 +267,6 @@ int main(void) {
 	
 	bool oldHeadUp = false;
 	
-	char buff[PUNCHPRESS_EPIN_SIZE];
-
 	// Infinite loop
 	while (1) {
 		// Obtain motor power
