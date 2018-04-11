@@ -174,6 +174,12 @@ int main(void) {
 	// Configure the system clock
 	SystemClock_Config();
 	
+	// Init LEDs
+	LEDDriver leds;
+	leds.init();
+	
+	leds.onGreen();
+	
 	// Init USB
 #ifdef PUNCHPRESS_USB
 	HAL_NVIC_SetPriority(SysTick_IRQn, 6, 0);
@@ -181,18 +187,16 @@ int main(void) {
 	
 	// Init Device Library
 	USBD_Init(&USBD_Device, &HID_Desc, 0);
+	leds.onOrange();
 
 	// Add Supported Class
 	USBD_RegisterClass(&USBD_Device, USBD_PUNCHPRESS_CLASS);
 
 	// Start Device Process
 	USBD_Start(&USBD_Device);
+	leds.onRed();
 #endif
 	
-	// Init LEDs
-	LEDDriver leds;
-	leds.init();
-
 	// Init UART
 	initUARTConsole(921600);
 	
@@ -203,31 +207,23 @@ int main(void) {
 	pwmCaptureX.init();
 	pwmCaptureY.init();
 	
-	// Do something with LEDs to demonstrate that the code is running
-	for(int cnt = 0; cnt < 8; cnt++) {
-		switch(cnt % 4) {
-			case 0: leds.toggleOrange(); break;
-			case 1: leds.toggleRed(); break;
-			case 2: leds.toggleBlue(); break;
-			case 3: leds.toggleGreen(); break;
-		}
-		
-		//std::printf("Hello world: %d\r\n", cnt);
-		
-		HAL_Delay(25); // 25ms
-	}
-	
 	initTimeCounter();
 	
 	// Initialize punch press simulation
 	PunchPress pp;
 
 	pp.setPos(10000000, 10000000);
+	
+	leds.onBlue();
 
 	//std::printf("Waiting 1s...\r\n");
 	HAL_Delay(1000);
-
- 	
+	
+ 	leds.offGreen();
+	leds.offOrange();
+	leds.offRed();
+	leds.offBlue();
+	
 #ifdef PUNCHPRESS_USB
 	USBD_PUNCHPRESSS_SendResetMesage(&USBD_Device);
 #else
