@@ -66,7 +66,9 @@ $(HAL)/Src/stm32f4xx_hal_uart.o \
 \
 $(HAL)/Src/stm32f4xx_ll_usb.o \
 $(HAL)/Src/stm32f4xx_hal_pcd.o \
-$(HAL)/Src/stm32f4xx_hal_pcd_ex.o
+$(HAL)/Src/stm32f4xx_hal_pcd_ex.o \
+\
+$(HAL)/Src/stm32f4xx_hal_rng.o
 
 HCD_OBJECTS=\
 $(HCD)/Core/Src/usbd_core.o \
@@ -102,7 +104,6 @@ $(HAL)/Src/stm32f4xx_hal_pcd_ex.o \
 $(HAL)/Src/stm32f4xx_hal_pwr.o \
 $(HAL)/Src/stm32f4xx_hal_pwr_ex.o \
 $(HAL)/Src/stm32f4xx_hal_qspi.o \
-$(HAL)/Src/stm32f4xx_hal_rng.o \
 $(HAL)/Src/stm32f4xx_hal_rtc.o \
 $(HAL)/Src/stm32f4xx_hal_rtc_ex.o \
 $(HAL)/Src/stm32f4xx_hal_sai.o \

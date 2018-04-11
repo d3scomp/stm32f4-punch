@@ -82,6 +82,22 @@ void initPunchInput() {
 	HAL_GPIO_Init(GPIOC, &GPIO_Init);
 }
 
+void initConfigurationInput() {
+	// Enable input pins
+	__HAL_RCC_GPIOB_CLK_ENABLE();
+	GPIO_InitTypeDef GPIO_Init;
+	GPIO_Init.Pin = GPIO_PIN_1;
+	GPIO_Init.Mode = GPIO_MODE_INPUT;
+	GPIO_Init.Pull = GPIO_PULLUP;
+	GPIO_Init.Speed = GPIO_SPEED_HIGH;
+	GPIO_Init.Alternate = 0;
+	HAL_GPIO_Init(GPIOB, &GPIO_Init);
+}
+
+bool readHeadPositionRandomization() {
+	return !HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1);
+}
+
 void initPunchOutput() {
 	// Enable input pins
 	__HAL_RCC_GPIOC_CLK_ENABLE();
@@ -178,6 +194,12 @@ int main(void) {
 	LEDDriver leds;
 	leds.init();
 	
+	// Init RNG
+	__HAL_RCC_RNG_CLK_ENABLE();
+	RNG_HandleTypeDef hRNG;
+	hRNG.Instance = RNG;
+	HAL_RNG_Init(&hRNG);
+	
 	leds.onGreen();
 	
 	// Init USB
@@ -203,6 +225,7 @@ int main(void) {
 	// Init IO
 	initPunchInput();
 	initPunchOutput();
+	initConfigurationInput();	
 
 	pwmCaptureX.init();
 	pwmCaptureY.init();
@@ -212,7 +235,17 @@ int main(void) {
 	// Initialize punch press simulation
 	PunchPress pp;
 
-	pp.setPos(10000000, 10000000);
+	if(readHeadPositionRandomization()) {
+		HAL_Delay(10);
+		uint32_t data_x = 0;
+		uint32_t data_y = 0;
+		HAL_RNG_GenerateRandomNumber(&hRNG, &data_x);
+		HAL_RNG_GenerateRandomNumber(&hRNG, &data_y); 
+		
+		pp.setPos(20 * 10000000 + data_x % (1480 * 1000000), 20 * 10000000 + data_y % (9800 * 1000000));
+	} else {
+		pp.setPos(00000000, 00000000);
+	}
 	
 	leds.onBlue();
 
