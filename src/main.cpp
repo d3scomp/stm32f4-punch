@@ -301,7 +301,7 @@ int main(void) {
 #else
 			std::printf("#F\r\n");
 #endif
-			
+			leds.onRed();
 		} else {
 #ifdef PUNCHPRESS_USB
 			USBD_PUNCHPRESSS_SendHeadPositionMesage(&USBD_Device, pp.x.headPos_nm, pp.y.headPos_nm);
