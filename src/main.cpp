@@ -173,9 +173,9 @@ int main(void) {
 
 	// Configure the system clock
 	SystemClock_Config();
-
 	
 	// Init USB
+#ifdef PUNCHPRESS_USB
 	HAL_NVIC_SetPriority(SysTick_IRQn, 6, 0);
 	HAL_NVIC_SetPriority(OTG_FS_IRQn, 4, 2);
 	
@@ -187,7 +187,7 @@ int main(void) {
 
 	// Start Device Process
 	USBD_Start(&USBD_Device);
-	
+#endif
 	
 	// Init LEDs
 	LEDDriver leds;
@@ -227,8 +227,12 @@ int main(void) {
 	//std::printf("Waiting 1s...\r\n");
 	HAL_Delay(1000);
 
- 	std::printf("\r\n#R\r\n");
+ 	
+#ifdef PUNCHPRESS_USB
 	USBD_PUNCHPRESSS_SendResetMesage(&USBD_Device);
+#else
+	std::printf("\r\n#R\r\n");
+#endif
 	
 	uint32_t tim2last = getTimerCounter();
 	
@@ -261,25 +265,38 @@ int main(void) {
 		
 
 		if(pp.failed) {
+#ifdef PUNCHPRESS_USB
 			std::printf("#F\r\n");
+#else
 			USBD_PUNCHPRESSS_SendFailMesage(&USBD_Device);
+#endif
+			
 		} else {
+#ifdef PUNCHPRESS_USB
+			USBD_PUNCHPRESSS_SendHeadPositionMesage(&USBD_Device, pp.x.headPos_nm, pp.y.headPos_nm);
+#else
 			std::printf("#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
 			////std::printf("#H%ld;%ld;ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm, pp.x.velocity_um_s, pp.y.velocity_um_s);
-			
-			USBD_PUNCHPRESSS_SendHeadPositionMesage(&USBD_Device, pp.x.headPos_nm, pp.y.headPos_nm);
+#endif
 		}
 
 		if(state.getHeadUp() && !oldHeadUp) {
 			oldHeadUp = true;
- 			std::printf("#U\r\n");
+ 			
+#ifdef PUNCHPRESS_USB
 			USBD_PUNCHPRESSS_SendHeadUpMesage(&USBD_Device);
+#else
+			std::printf("#U\r\n");
+#endif
 		}
 
 		if(!state.getHeadUp() && oldHeadUp) {
 			oldHeadUp = false;
- 			std::printf("#D\r\n");
+#ifdef PUNCHPRESS_USB
 			USBD_PUNCHPRESSS_SendHeadDownMesage(&USBD_Device);
+#else
+			std::printf("#D\r\n");
+#endif
 		}
 
 		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);

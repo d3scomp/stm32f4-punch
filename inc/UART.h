@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 extern "C" {
 	int _write(int file, char* ptr, int len);
 }

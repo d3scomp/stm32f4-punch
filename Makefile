@@ -22,6 +22,7 @@ CFLAGS = -mcpu=cortex-m4 -g -Os -Wall -pipe -fno-exceptions -fomit-frame-pointer
 CFLAGS += -mlittle-endian -mthumb -mthumb-interwork -mfloat-abi=hard -mfpu=fpv4-sp-d16 -fsingle-precision-constant
 CFLAGS += -MMD -MP
 CFLAGS += -D STM32F407xx
+CFLAGS += -D PUNCHPRESS_USB
 CXXFLAGS = $(CFLAGS) -std=c++11
 LDFLAGS=$(CFLAGS) -T STM32F407VG_FLASH.ld -specs=nosys.specs -Wl,-Map,$(PROJECT).map  
 
