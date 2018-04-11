@@ -207,7 +207,6 @@ int main(void) {
 	leds.onGreen();
 	
 	// Init USB
-#ifdef PUNCHPRESS_USB
 	HAL_NVIC_SetPriority(SysTick_IRQn, 6, 0);
 	HAL_NVIC_SetPriority(OTG_FS_IRQn, 4, 2);
 	
@@ -221,7 +220,6 @@ int main(void) {
 	// Start Device Process
 	USBD_Start(&USBD_Device);
 	leds.onRed();
-#endif
 	
 	// Init UART
 	initUARTConsole(921600);
@@ -260,15 +258,11 @@ int main(void) {
 	leds.offRed();
 	leds.offBlue();
 	
-#ifdef PUNCHPRESS_USB
-	USBD_PUNCHPRESSS_SendResetMesage(&USBD_Device);
-#else
-	std::printf("\r\n#R\r\n");
-#endif
+	// Reset visulizator
+	HAL_Delay(500);
+	USBD_PUNCHPRESSS_SendSimStateMesage(&USBD_Device, true, pp.failed, false, pp.x.headPos_nm, pp.y.headPos_nm);
 	
 	uint32_t tim2last = getTimerCounter();
-	
-	bool oldHeadUp = false;
 	
 	// Infinite loop
 	while (1) {
@@ -292,43 +286,9 @@ int main(void) {
 		uint32_t tim2new = getTimerCounter();
 		State state = pp.update((tim2new - tim2last) / TIM2_TICK_PER_US);
 		tim2last = tim2new;
-		
 
-		if(pp.failed) {
-#ifdef PUNCHPRESS_USB
-			USBD_PUNCHPRESSS_SendFailMesage(&USBD_Device);
-#else
-			std::printf("#F\r\n");
-#endif
-			leds.onRed();
-		} else {
-#ifdef PUNCHPRESS_USB
-			USBD_PUNCHPRESSS_SendHeadPositionMesage(&USBD_Device, pp.x.headPos_nm, pp.y.headPos_nm);
-#else
-			std::printf("#H%ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm);
-			////std::printf("#H%ld;%ld;ld;%ld\r\n", pp.x.headPos_nm, pp.y.headPos_nm, pp.x.velocity_um_s, pp.y.velocity_um_s);
-#endif
-		}
-
-		if(state.getHeadUp() && !oldHeadUp) {
-			oldHeadUp = true;
- 			
-#ifdef PUNCHPRESS_USB
-			USBD_PUNCHPRESSS_SendHeadUpMesage(&USBD_Device);
-#else
-			std::printf("#U\r\n");
-#endif
-		}
-
-		if(!state.getHeadUp() && oldHeadUp) {
-			oldHeadUp = false;
-#ifdef PUNCHPRESS_USB
-			USBD_PUNCHPRESSS_SendHeadDownMesage(&USBD_Device);
-#else
-			std::printf("#D\r\n");
-#endif
-		}
-
+		// Update visulizator
+		USBD_PUNCHPRESSS_SendSimStateMesage(&USBD_Device, false, pp.failed, state.getHeadUp(), pp.x.headPos_nm, pp.y.headPos_nm);
 		//printf("%ld	%ld\r\n", pp.x_axis.head_pos, pp.y_axis.head_pos);
 		
 		// Get output from simulation

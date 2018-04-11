@@ -261,28 +261,7 @@ uint8_t USBD_PUNCHPRESSS_SendPacket(USBD_HandleTypeDef *pdev, uint8_t *data, uin
 	return USBD_OK;
 }
 
-
-uint8_t USBD_PUNCHPRESSS_SendResetMesage(USBD_HandleTypeDef *pdev) {
-	uint8_t data = REBOOT;
-	return USBD_PUNCHPRESSS_SendPacket(pdev, &data, sizeof(data));
-}
-
-uint8_t USBD_PUNCHPRESSS_SendFailMesage(USBD_HandleTypeDef *pdev) {
-	uint8_t data = FAIL;
-	return USBD_PUNCHPRESSS_SendPacket(pdev, &data, sizeof(data));
-}
-
-uint8_t USBD_PUNCHPRESSS_SendHeadPositionMesage(USBD_HandleTypeDef *pdev, int32_t x, int32_t y) {
-	HeadPositionMessage data = {HEAD_POSITION, x, y};
+uint8_t USBD_PUNCHPRESSS_SendSimStateMesage(USBD_HandleTypeDef *pdev, bool reset, bool fail, bool headup, int32_t x, int32_t y) {
+	SimStateType data = {reset, fail, headup, x, y};
 	return USBD_PUNCHPRESSS_SendPacket(pdev, (uint8_t*)&data, sizeof(data));
-}
-
-uint8_t USBD_PUNCHPRESSS_SendHeadUpMesage(USBD_HandleTypeDef *pdev) {
-	uint8_t data = HEAD_UP;
-	return USBD_PUNCHPRESSS_SendPacket(pdev, &data, sizeof(data));
-}
-
-uint8_t USBD_PUNCHPRESSS_SendHeadDownMesage(USBD_HandleTypeDef *pdev) {
-	uint8_t data = HEAD_DOWN;
-	return USBD_PUNCHPRESSS_SendPacket(pdev, &data, sizeof(data));
 }
