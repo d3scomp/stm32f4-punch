@@ -295,9 +295,9 @@ int main(void) {
 
 		if(pp.failed) {
 #ifdef PUNCHPRESS_USB
-			std::printf("#F\r\n");
-#else
 			USBD_PUNCHPRESSS_SendFailMesage(&USBD_Device);
+#else
+			std::printf("#F\r\n");
 #endif
 			
 		} else {
