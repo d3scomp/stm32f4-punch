@@ -77,8 +77,7 @@ USBD_ClassTypeDef USBD_PUNCHPRESS_ClassDriver = {
   #pragma data_alignment=4   
 #endif
 /* USB PUNCHPRESS device Configuration Descriptor */
-__ALIGN_BEGIN static uint8_t USBD_PUNCHPRESS_CfgDesc[USB_PUNCHPRESS_CONFIG_DESC_SIZ] __ALIGN_END =
-{
+__ALIGN_BEGIN static uint8_t USBD_PUNCHPRESS_CfgDesc[USB_PUNCHPRESS_CONFIG_DESC_SIZ] __ALIGN_END = {
   0x09, /* bLength: Configuation Descriptor size */
   USB_DESC_TYPE_CONFIGURATION, /* bDescriptorType: Configuration */
   USB_PUNCHPRESS_CONFIG_DESC_SIZ,
@@ -120,8 +119,7 @@ __ALIGN_BEGIN static uint8_t USBD_PUNCHPRESS_CfgDesc[USB_PUNCHPRESS_CONFIG_DESC_
   #pragma data_alignment=4   
 #endif
 /* USB Standard Device Descriptor */
-static uint8_t USBD_PUNCHPRESS_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] =
-{
+static uint8_t USBD_PUNCHPRESS_DeviceQualifierDesc[USB_LEN_DEV_QUALIFIER_DESC] = {
   USB_LEN_DEV_QUALIFIER_DESC,
   USB_DESC_TYPE_DEVICE_QUALIFIER,
   0x00,
@@ -221,8 +219,7 @@ static uint8_t *USBD_PUNCHPRESS_GetCfgDesc (uint16_t *length) {
 * @param  length : pointer data length
 * @retval pointer to descriptor buffer
 */
-uint8_t  *USBD_PUNCHPRESS_DeviceQualifierDescriptor (uint16_t *length)
-{
+uint8_t  *USBD_PUNCHPRESS_DeviceQualifierDescriptor(uint16_t *length) {
 	printf("USBD_PUNCHPRESS_DeviceQualifierDescriptor\r\n");
 	*length = sizeof (USBD_PUNCHPRESS_DeviceQualifierDesc);
 	return USBD_PUNCHPRESS_DeviceQualifierDesc;
@@ -248,8 +245,7 @@ static uint8_t  USBD_PUNCHPRESS_DataIn (USBD_HandleTypeDef *pdev, uint8_t epnum)
 * @param  length : pointer data length
 * @retval pointer to descriptor buffer
 */
-uint8_t  *USBD_PUNCHPRESS_GetDeviceQualifierDesc (uint16_t *length)
-{
+uint8_t  *USBD_PUNCHPRESS_GetDeviceQualifierDesc (uint16_t *length) {
   *length = sizeof (USBD_PUNCHPRESS_DeviceQualifierDesc);
   return USBD_PUNCHPRESS_DeviceQualifierDesc;
 }
