@@ -255,10 +255,11 @@ uint8_t USBD_PUNCHPRESSS_SendPacket(USBD_HandleTypeDef *pdev, uint8_t *data, uin
 		if (((USBD_PUNCHPRESS_HandleTypeDef *)pdev->pClassData)->idle == 1) {
 			((USBD_PUNCHPRESS_HandleTypeDef *)pdev->pClassData)->idle = 0;
 			USBD_LL_Transmit (pdev, PUNCHPRESS_EPIN_ADDR, data, len);
+			return USBD_OK;
 		}
 	}
 
-	return USBD_OK;
+	return USBD_FAIL;
 }
 
 uint8_t USBD_PUNCHPRESSS_SendSimStateMesage(USBD_HandleTypeDef *pdev, bool reset, bool fail, bool headup, int32_t x, int32_t y) {

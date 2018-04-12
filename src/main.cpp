@@ -259,8 +259,7 @@ int main(void) {
 	leds.offBlue();
 	
 	// Reset visulizator
-	HAL_Delay(500);
-	USBD_PUNCHPRESSS_SendSimStateMesage(&USBD_Device, true, pp.failed, false, pp.x.headPos_nm, pp.y.headPos_nm);
+	while(USBD_PUNCHPRESSS_SendSimStateMesage(&USBD_Device, true, pp.failed, false, pp.x.headPos_nm, pp.y.headPos_nm) != USBD_OK);
 	
 	uint32_t tim2last = getTimerCounter();
 	
