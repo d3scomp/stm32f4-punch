@@ -246,7 +246,7 @@ int main(void) {
 		HAL_RNG_GenerateRandomNumber(&hRNG, &data_x);
 		HAL_RNG_GenerateRandomNumber(&hRNG, &data_y); 
 		
-		pp.setPos(data_x % (1500 * 1000000), data_y % (1000 * 1000000));
+		pp.setPos(data_x % (500 * 1000000), data_y % (500 * 1000000));
 	} else {
 		pp.setPos(10000000, 10000000);
 	}
