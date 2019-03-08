@@ -3,7 +3,7 @@ PROJECT=punchpresssim
 ELF = $(PROJECT).elf
 
 # Library paths (adjust to match your needs)
-STM32F4CUBE=../stm32f4cube
+STM32F4CUBE=$(ERS_ROOT)/stm32f4cube
 CMSIS=$(STM32F4CUBE)/Drivers/CMSIS
 HAL=$(STM32F4CUBE)/Drivers/STM32F4xx_HAL_Driver
 HCD=$(STM32F4CUBE)/Middlewares/ST/STM32_USB_Device_Library
@@ -163,18 +163,18 @@ $(ELF): $(OBJECTS)
 	$(CC) -c $(CFLAGS) $(INCLUDES) $< -o $@
 
 # Flash final elf into device
-flash: $(ELF)
+flash1: $(ELF)
 	${OPENOCD} -f board/stm32f4discovery.cfg -c "program $< verify reset exit"
 
 # Flash final elf into device
-flash2: $(ELF)
+flash: $(ELF)
 	${OPENOCD} -f board/stm32f4discovery-v2.1.cfg -c "program $< verify reset exit"
 
 # Debug
-debug: $(ELF)
+debug1: $(ELF)
 	$(GDB) $(ELF) -ex "target remote | openocd -f board/stm32f4discovery.cfg --pipe" -ex load
 
-debug2: $(ELF)
+debug: $(ELF)
 	$(GDB) $(ELF) -ex "target remote | openocd -f board/stm32f4discovery-v2.1.cfg --pipe" -ex load
 
 -include $(DEPENDENCIES)
